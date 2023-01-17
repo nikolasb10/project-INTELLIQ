@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: montserrat, sans-serif;
+}
+
+.welcome {
+  margin-top: center;
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  padding: 15px 30px;
+  border-radius: 8px;
+
+}
+
+.welcome h2 {
+  color: #888;
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 30px;
+}
+
+.welcome h2 span {
+  color: #87B3F5;
+  font-weight: 700;
+}
+
+.welcome button {
+  display: inline-block;
+  padding: 10px 15px;
+  border-radius: 8px;
+  background-image: linear-gradient(to right, #87B3F5 50%, #87B3F5 50%, #0F8360);
+  background-size: 200%;
+  background-position: 0%;
+  transition: 0.4s;
+  color: #FFF;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.welcome button:hover {
+  background-position: 100% 0%;
+}

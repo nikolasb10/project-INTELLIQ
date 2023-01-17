@@ -1,45 +1,44 @@
-import {Link} from 'react-router-dom'
-import React, {useState} from 'react';
-import LoginForm from '../components/LoginForm'
+import {Link, useNavigate} from 'react-router-dom';
+import {React, useState} from 'react';
+import LoginForm from '../components/LoginForm';
+import Welcome from './Welcome';
+import axios from 'axios';
 
-
-function LoginPage() {
+function LoginPage({user, setUser}) {
   const adminUser = {
     email: "admin@admin.com",
     password: "admin123"
   }
 
-  const [user, setUser] = useState({name: "", email: ""});
   const [error, setError] = useState("");
+  let navigate = useNavigate();
 
   const Login = details => {
     console.log(details);
-
-    if(details.email == adminUser.email && details.password == adminUser.password) {
-      console.log("Logged in");
-      setUser({
-        name: details.name,
-        email: details.email
-      });
-    }
-    else {
-      console.log("Wrong credentials!")
-      setError("Wrong credentials!");
-    }
-  }
-
-  const Logout = () => {
-    console.log("Logout");
-    setUser({name: "", email: ""});
+    axios.post("http://localhost:3000/login", {
+      username: details.email,
+      password: details.password,
+    }).then((response) => {
+      if(response.data.message){
+        setError("Wrong credentials!");
+      } else {
+        console.log("Logged in");
+        setUser({
+          member_id: response.data[0].member_id,
+          First_Name: response.data[0].First_Name,
+          email: details.email,
+          password: details.password,
+          mstatus: response.data[0].mstatus
+        });
+      }
+      console.log(response.data);
+    });
   }
 
   return (
     <div className="LoginPage">
       {(user.email != "") ? (
-        <div className="welcome">
-          <h1> Welcome!</h1>
-          <button onClick={Logout}> Logout </button>
-        </div>
+        <Welcome user={user} setUser={setUser} />
       ) : (
         <LoginForm Login={Login} error={error} />
       )

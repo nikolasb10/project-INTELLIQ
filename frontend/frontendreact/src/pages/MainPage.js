@@ -11,10 +11,10 @@ function MainPage() {
       <h1 className="Title"> Welcome to Intelliq!</h1>
       <h2 className="h2"> Choose what you would like to do: </h2>
       <div className="Box">
-        <Link to='/questionaire'>
-          <button type="button" className="btn">Answer a questionaire anonymously</button>
+        <Link to='/intelliq_api/questionnaire'>
+          <button type="button" className="btn">Answer a questionnaire anonymously</button>
         </Link>
-        <Link to='/login'>
+        <Link to='/intelliq_api/login'>
           <button type="button" className="btn">Login</button>
         </Link>
       </div>

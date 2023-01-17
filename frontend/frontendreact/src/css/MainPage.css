@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url('../components/back.jfif');
+  /*background-image: url('../components/back.jfif');*/
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: cover; /* Resize the background image to cover the entire container */
@@ -39,7 +39,7 @@
 }
 
 .h2 {
-  top: 300px;
+  top: 250px;
   left: 60px;
   display: block;
   position: absolute;

@@ -27,6 +27,7 @@ form {
 }
 
 form:after {
+  border-radius: 8px;
   content: '';
   display: block;
   position: absolute;
@@ -39,6 +40,7 @@ form:after {
 }
 
 form .form-inner {
+  border-radius: 8px;
   position: relative;
   display: block;
   background-color: #EEF;
