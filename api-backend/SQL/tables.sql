@@ -20,6 +20,7 @@ CREATE TABLE question(
 CREATE TABLE questionnaire_form(
 	questionnaire_id char(5),
     questionnaire_title varchar(50),
+    keywords varchar(50),
     member_id char(5),
     primary key (questionnaire_id),
     foreign key (member_id) references Member(member_id)
