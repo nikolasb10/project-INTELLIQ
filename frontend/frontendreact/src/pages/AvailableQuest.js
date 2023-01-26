@@ -44,7 +44,14 @@ function AvailableQuest({user, setUser}){
               <tr key={getcate.questionnaire_id}>
                 <td>{getcate.questionnaire_title}</td>
                 <td> {getcate.keywords}</td>
-                <td><button> View </button> <button> Delete </button></td>
+                <td>
+                  <Link to={'/intelliq_api/questionnaire/'+getcate.questionnaire_id}>
+                    <button> View </button>
+                  </Link>&nbsp;&nbsp;
+                  <Link to='/intelliq_api/questionnaire'>
+                    <button> Delete </button>
+                  </Link>
+                </td>
               </tr>
               ))}
             </tbody>

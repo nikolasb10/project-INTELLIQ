@@ -15,6 +15,7 @@ function Questionnaire_upd({user, setUser}){
 
   const onInputChange = (e) => {
     setFile({selectedFile: e.target.files[0]});
+    setLoading({Loading: null});
   };
 
   const onUpload = (e) => {
@@ -23,7 +24,7 @@ function Questionnaire_upd({user, setUser}){
     const data = new FormData();
     data.append('file',file.selectedFile,file.selectedFile.name);
     console.log(data)
-    axios.post("http://localhost:3000/upload",data,{
+    axios.post("http://localhost:3000/upload/"+user.member_id,data,{
         onUploadProgress: (ProgressEvent) => {
           setLoading({ Loading: (ProgressEvent.loaded / ProgressEvent.total) * 100});
         }
@@ -34,6 +35,7 @@ function Questionnaire_upd({user, setUser}){
             .catch((response) => {
                 console.log('Upload Error')
             })
+    setFile({selectedFile: null});
   }
 
   if(user.First_Name=="") {

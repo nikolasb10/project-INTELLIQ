@@ -67,4 +67,65 @@ CREATE TABLE ans_consist_of (
     foreign key (optid) references _options(optid)
     );
 
-    
+-- Alter of title length
+ALTER TABLE `intelliq22`.`questionnaire_form` 
+CHANGE COLUMN `questionnaire_title` `questionnaire_title` VARCHAR(50) NULL DEFAULT NULL ;
+
+-- Drop of keywors column from questionnaire form
+ALTER TABLE `intelliq22`.`questionnaire_form` 
+DROP COLUMN `keywords`;
+
+-- Alter lengths
+ALTER TABLE `intelliq22`.`question` 
+CHANGE COLUMN `required` `required` CHAR(5) NULL DEFAULT NULL ,
+CHANGE COLUMN `qtype` `qtype` CHAR(10) NULL DEFAULT NULL ;
+
+-- Alter opt_id length
+ALTER TABLE `intelliq22`.`form_opt_and_questions` 
+DROP FOREIGN KEY `form_opt_and_questions_ibfk_3`;
+ALTER TABLE `intelliq22`.`form_opt_and_questions` 
+CHANGE COLUMN `optid` `optid` CHAR(6) NOT NULL ;
+ALTER TABLE `intelliq22`.`form_opt_and_questions` 
+ADD CONSTRAINT `form_opt_and_questions_ibfk_3`
+  FOREIGN KEY (`optid`)
+  REFERENCES `intelliq22`.`_options` (`optid`);
+
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+DROP FOREIGN KEY `ans_consist_of_ibfk_3`;
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+CHANGE COLUMN `optid` `optid` CHAR(6) NOT NULL ;
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+ADD CONSTRAINT `ans_consist_of_ibfk_3`
+  FOREIGN KEY (`optid`)
+  REFERENCES `intelliq22`.`_options` (`optid`);
+
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+DROP FOREIGN KEY `ans_consist_of_ibfk_3`;
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+DROP INDEX `ans_consist_of_ibfk_3` ;
+;
+
+ALTER TABLE `intelliq22`.`_options` 
+CHANGE COLUMN `optid` `optid` CHAR(6) NOT NULL ;
+
+
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+ADD INDEX `ans_consist_of_ibfk_3_idx` (`optid` ASC) VISIBLE;
+;
+ALTER TABLE `intelliq22`.`ans_consist_of` 
+ADD CONSTRAINT `ans_consist_of_ibfk_3`
+  FOREIGN KEY (`optid`)
+  REFERENCES `intelliq22`.`_options` (`optid`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+ALTER TABLE `intelliq22`.`form_opt_and_questions` 
+ADD INDEX `form_opt_and_questions_ibfk_3_idx` (`optid` ASC) VISIBLE;
+;
+ALTER TABLE `intelliq22`.`form_opt_and_questions` 
+ADD CONSTRAINT `form_opt_and_questions_ibfk_3`
+  FOREIGN KEY (`optid`)
+  REFERENCES `intelliq22`.`_options` (`optid`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+
