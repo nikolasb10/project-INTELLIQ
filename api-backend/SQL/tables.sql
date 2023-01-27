@@ -4,6 +4,7 @@ CREATE TABLE Member(
         First_Name varchar(20) not null,
         Last_Name varchar(20) not null,
         email varchar(50),
+        password varchar(50),
         Gender varchar(20),
         Date_of_Birth varchar(10) not null,
         primary key (member_id)
