@@ -42,10 +42,13 @@ app.post('/upload/:member_id', (req, res) => {
         var q_title = json_data["questionnaireTitle"];
         var member_id = req.params.member_id;
         //console.log(json_data["questions"][0]["qID"]);
-        //var keywords = [];
-        
+        var keywords = "";
+        for(const i in json_data["keywords"]) {
+          keywords +=  json_data["keywords"][i]+", ";
+        }
+        keywords = keywords.slice(0, -2);
         db.query(
-          "INSERT INTO questionnaire_form VALUES (?,?,?)", [q_id,q_title,member_id], (err, result) => {
+          "INSERT INTO questionnaire_form VALUES (?,?,?,?)", [q_id,q_title,keywords,member_id], (err, result) => {
             if(err) {
               console.log(err);
             } else {
@@ -60,7 +63,7 @@ app.post('/upload/:member_id', (req, res) => {
                 )
               }
               for(const i in json_data["questions"]) {
-                var question_id = json_data["questions"][i]["qID"]
+                var question_id = q_id+json_data["questions"][i]["qID"];
                 var q_text = json_data["questions"][i]["qtext"]
                 var required = json_data["questions"][i]["required"]
                 var type = json_data["questions"][i]["type"]
@@ -72,10 +75,11 @@ app.post('/upload/:member_id', (req, res) => {
                     } else {
                       console.log(result1);
                       for(const j in json_data["questions"][i]["options"]) {
-                        var optID = json_data["questions"][i]["options"][j]["optID"]
+                        var optID = q_id+json_data["questions"][i]["options"][j]["optID"]
+                        if(optID.length>10) optID = optID.slice(0, -1);
                         var opttxt = json_data["questions"][i]["options"][j]["opttxt"]
-                        var nextqID = json_data["questions"][i]["options"][j]["nextqID"]     
-
+                        var nextqID = q_id+json_data["questions"][i]["options"][j]["nextqID"]     
+                        var question_id = q_id+json_data["questions"][i]["qID"];
                         db.query(
                           "INSERT INTO _options VALUES (?,?,?)", [optID,opttxt,nextqID], (err2, result2) => {
                             if(err2) {
@@ -87,7 +91,7 @@ app.post('/upload/:member_id', (req, res) => {
                           "INSERT INTO form_opt_and_questions VALUES (?,?,?)", [q_id,question_id,optID], (err2, result2) => {
                             if(err2) {
                               console.log(err2);
-                            } else console.log(result2);
+                            } else console.log(question_id," ",result2);
                           }
                         )
                       }
@@ -192,18 +196,102 @@ app.get('/admin/users/:username', function(req, res, next) {
 
 app.post('/admin/questionnaires', function(req, res, next) {
   const id = req.body.id;
-  console.log(id);
   db.query(
     "SELECT * FROM questionnaire_form WHERE member_id = ?", [id], (err, result) => {
       if(err) {
         res.send({err: err})
       }
-      res.send(result);
-      console.log(result);
+      else {
+        console.log(result);
+        res.send(result);
+      }
     }
   )
 });
 
+app.get('/admin/questionnaire/:questionnaireID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  db.query(
+    "SELECT * \
+     FROM question \
+     WHERE qid in ( SELECT qid \
+                   FROM form_opt_and_questions \
+                   WHERE questionnaire_id = ?)", 
+      [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get attributes of only one questionnaire
+app.get('/admin/:questionnaireID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  db.query(
+    "SELECT * \
+     FROM questionnaire_form \
+     WHERE questionnaire_id = ?", 
+      [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get data of a specific question of a specific questionnaire 
+app.get('/admin/question/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const qid = req.params.questionID;
+  db.query(
+    "SELECT * \
+     FROM _options \
+     WHERE optid in ( SELECT optid \
+                   FROM form_opt_and_questions \
+                   WHERE questionnaire_id = ? and qid = ?)", 
+      [questionnaire_id,qid], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get attributes of only one question
+app.get('/admin/question/:questionID', function(req, res, next) {
+  const question_id = req.params.questionID;
+  db.query(
+    "SELECT * \
+     FROM question \
+     WHERE qid = ?", 
+      [question_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
 
 /*
 //route setup for homepage
@@ -241,4 +329,50 @@ app.post('/upload',upload.single('file'), (req, res) => {
       return res.status(200).send(req.files)
   })
 });
+
+
+
+
+var when = function() {
+          var args = arguments;  // the functions to execute first
+          return {
+            then: function(done) {
+              var counter = 0;
+              for(var i = 0; i < args.length; i++) {
+                // call each function with a function to call on done
+                args[i](function() {
+                  counter++;
+                  if(counter === args.length) {  // all functions have notified they're done
+                    done();
+                  }
+                });
+              }
+            }
+          };
+        };
+        when(
+          function(done) {
+            for(const i in result){
+              questionnaire_id = result[i]["questionnaire_id"]
+              db.query(
+                "SELECT key_word FROM keyword WHERE questionnaire_id = ?", [questionnaire_id], (err1, result1) => {
+                  if(err1) {
+                    console.log(err1)
+                  } else{
+                    var keywords = "";
+                    for(const j in result1){
+                      keywords += result1[j]["key_word"]+", ";
+                    }
+                    keywords = keywords.slice(0, -2);
+                    result[i]["keyword"] = keywords;
+                    console.log(result);
+                  }
+                }
+              )
+            }
+            done();
+          }).then(function() {
+            console.log(result);
+            res.send(result);
+        });      
 */

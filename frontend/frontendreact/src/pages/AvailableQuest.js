@@ -16,7 +16,6 @@ function AvailableQuest({user, setUser}){
           console.log(response.data);
         })
     }
-
       questionnaires();
     },[]);
   if(user.First_Name=="") {
@@ -48,7 +47,7 @@ function AvailableQuest({user, setUser}){
                   <Link to={'/intelliq_api/questionnaire/'+getcate.questionnaire_id}>
                     <button> View </button>
                   </Link>&nbsp;&nbsp;
-                  <Link to='/intelliq_api/questionnaire'>
+                  <Link to={'/intelliq_api/questionnaire/'+getcate.questionnaire_id}>
                     <button> Delete </button>
                   </Link>
                 </td>

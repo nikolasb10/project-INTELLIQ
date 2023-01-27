@@ -10,6 +10,7 @@ import Welcome from './pages/Welcome'
 import AdminWelcome from './components/AdminWelcome'
 import Questionnaire_upd from './pages/Questionnaire_upd'
 import Questionnaire_view from "./pages/Questionnaire_view";
+import Question_view from "./pages/Question_view";
 
 function App() {
   const [user, setUser] = useState({member_id: "", First_Name: "", email: "", password: "", mstatus: ""});
@@ -24,6 +25,7 @@ function App() {
         <Route exact path="/intelliq_api/welcome" element={<Welcome user={user} setUser={setUser} />} />
         <Route exact path="/intelliq_api/admin/questionnaire_upd" element={<Questionnaire_upd user={user} setUser={setUser}/>} />
         <Route exact path="/intelliq_api/questionnaire/:questionnaireID" element={<Questionnaire_view user={user} setUser={setUser}/>} />
+        <Route exact path="/intelliq_api/question/:questionnaireID/:questionID" element={<Question_view user={user} setUser={setUser}/>} />
         <Route exact path="*" element={<ErrorPage />} />
       </Routes>
     </BrowserRouter>
