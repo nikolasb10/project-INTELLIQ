@@ -3,12 +3,11 @@ import {React, useState} from 'react';
 import LoginForm from '../components/LoginForm';
 import Welcome from './Welcome';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function LoginPage({user, setUser}) {
-  const adminUser = {
-    email: "admin@admin.com",
-    password: "admin123"
-  }
+
 
   const [error, setError] = useState("");
   let navigate = useNavigate();
@@ -20,9 +19,29 @@ function LoginPage({user, setUser}) {
       password: details.password,
     }).then((response) => {
       if(response.data.message){
-        setError("Wrong credentials!");
+        //setError("Wrong credentials!");
+        toast.error("Wrong credentials!",{
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          });
       } else {
         console.log("Logged in");
+        toast.success("Logged in",{
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          });
         setUser({
           member_id: response.data[0].member_id,
           First_Name: response.data[0].First_Name,
@@ -43,6 +62,7 @@ function LoginPage({user, setUser}) {
         <LoginForm Login={Login} error={error} />
       )
       }
+      <ToastContainer />
     </div>
   );
 }

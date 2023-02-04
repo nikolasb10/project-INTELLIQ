@@ -21,6 +21,11 @@ var db = mysql.createConnection({
   multipleStatements: true
 });
 
+db.connect(err => {
+  if(err) console.log(err)
+  else console.log("Connected to database")
+})
+
 module.exports = { db };
 
 // for file upload
@@ -194,6 +199,23 @@ app.get('/admin/users/:username', function(req, res, next) {
   )
 });
 
+// Get all the questionnaires available
+app.post('/questionnaires', function(req, res, next) {
+  const id = req.body.id;
+  db.query(
+    "SELECT * FROM questionnaire_form", [id], (err, result) => {
+      if(err) {
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get all the questionnaires of a user
 app.post('/admin/questionnaires', function(req, res, next) {
   const id = req.body.id;
   db.query(
@@ -209,6 +231,7 @@ app.post('/admin/questionnaires', function(req, res, next) {
   )
 });
 
+// get all questions for specific questionnaire
 app.get('/admin/questionnaire/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   db.query(
@@ -254,6 +277,7 @@ app.get('/admin/:questionnaireID', function(req, res, next) {
 app.get('/admin/question/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   const qid = req.params.questionID;
+  console.log(qid)
   db.query(
     "SELECT * \
      FROM _options \
@@ -293,7 +317,71 @@ app.get('/admin/question/:questionID', function(req, res, next) {
   )
 });
 
+// get questions and options for a specific questionnaire
+app.get('/doanswer2/:questionnaireID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  db.query(
+    "SELECT qid,qtext,required,qtype,o.optid,opttext,nextqid \
+     FROM (SELECT q.qid,qtext,required,qtype,optid \
+           FROM question as q \
+           LEFT join form_opt_and_questions as f \
+           on q.qid = f.qid \
+           WHERE questionnaire_id = ?) as mid \
+     LEFT JOIN _options as o \
+     on o.optid = mid.optid", 
+      [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result[0]);
+        res.json(result);
+      }
+    }
+  )
+});
+
+app.post('/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const q_id = req.params.questionID;
+  const session = req.params.session;
+  const optid = req.params.optionID;
+  console.log(optid)
+
+  db.query(
+    "INSERT INTO questionnaire_answer VALUES (?,?)", 
+      [session,questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+  db.query(
+    "INSERT INTO ans_consist_of VALUES (?,?,?)", 
+      [session,q_id,optid], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+});
 /*
+
+"SELECT * \
+    FROM _options \
+    WHERE optid in (SELECT optid \
+                    FROM form_opt_and_questions \
+                    WHERE questionnaire_id = ?)"
+
 //route setup for homepage
 app.get('/intelliq_api', (req, res) =>{
     res.render('../views/index.ejs')

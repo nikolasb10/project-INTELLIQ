@@ -14,7 +14,7 @@
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: cover; /* Resize the background image to cover the entire container */
-  background-color: #5F71AE;
+  background-color: #234B70;
   overflow: hidden;
 }
 
@@ -37,7 +37,7 @@
   font-weight: 500;
   margin-bottom: 30px;
 }
-
+/*
 .h2 {
   top: 250px;
   left: 60px;
@@ -47,7 +47,7 @@
   padding: 20px;
   color: #FFF;
   z-index: 1;
-}
+}*/
 
 .Box {
   margin: 50px auto 0 auto;

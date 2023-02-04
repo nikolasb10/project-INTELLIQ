@@ -72,13 +72,13 @@ function AdminWelcome({user}){
 
   return (
     <div>
-      <Link to='/intelliq_api/questionnaires'>
+      <Link to='/intelliq_api/admin/questionnaires'>
         <button> View your questionnaires </button><br/><br/>
       </Link>
       <Link to='/intelliq_api/admin/questionnaire_upd'>
         <button> Create a questionnaire </button><br/><br/>
       </Link>
-      <Link to='/intelliq_api/questionnaire'>
+      <Link to='/intelliq_api/questionnaires'>
         <button> Answer a questionnaire </button><br/><br/><br/>
       </Link>
       <button onClick={onResetall}> Reset </button><br/><br/>

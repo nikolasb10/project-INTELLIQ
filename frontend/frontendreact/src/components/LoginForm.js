@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import '../css/LoginForm.css';
+import {Link} from 'react-router-dom'
+import '../css/AvailableQuest.css';
 
 function LoginForm({Login, error}){
   const [details, setDetails] = useState({email: "", password: ""});
@@ -22,7 +24,10 @@ function LoginForm({Login, error}){
           <label htmlFor="password">Password:</label>
           <input type="password" name="password" id="password" onChange={e =>setDetails({...details, password:e.target.value})} value={details.password}/>
         </div>
-        <input type="submit" value="LOGIN" />
+        <input type="submit" value="LOGIN" />&nbsp;
+        <Link to='/intelliq_api/'>
+          <input type="submit" value="BACK" />
+        </Link>
       </div>
     </form>
   )
