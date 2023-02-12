@@ -36,3 +36,28 @@
 	   END IF;
 	   END;//
 	   delimiter ;
+
+delimiter //
+CREATE TRIGGER keyword_update_check
+BEFORE UPDATE ON questionnaire_form
+FOR EACH ROW
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM keyword WHERE questionnaire_id = NEW.questionnaire_id AND key_word IN (SELECT keywords FROM questionnaire_form WHERE questionnaire_id = NEW.questionnaire_id)) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid keywords.';
+  END IF;
+END;//
+delimiter ;
+
+
+ 
+ 
+  delimiter // 
+ CREATE TRIGGER nextqid_update_check
+BEFORE UPDATE ON _options
+FOR EACH ROW
+BEGIN
+  IF NEW.nextqid NOT IN (SELECT qid FROM question) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid next question id.';
+  END IF;
+END;//
+delimiter ; 
