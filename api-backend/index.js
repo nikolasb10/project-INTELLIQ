@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(fileUpload());
 
-app.listen(3000,()=>console.log('Express server is running'));
+app.listen(9103,()=>console.log('Express server is running'));
 
 // create connection and export it
 var db = mysql.createConnection({
@@ -29,7 +29,7 @@ db.connect(err => {
 module.exports = { db };
 
 // for file upload
-app.post('/upload/:member_id', (req, res) => {
+app.post('/intelliq_api/upload/:member_id', (req, res) => {
   const filename =  Date.now() + '-' + req.files.file.name;
   const md5 = req.files.file.md5;
   const saveAs = `${md5}_${filename}`;
@@ -115,7 +115,7 @@ app.post('/upload/:member_id', (req, res) => {
   //console.log(req.files);
 });
 
-app.get('/admin/healthcheck', function(req, res, next) {
+app.get('/intelliq_api/admin/healthcheck', function(req, res, next) {
   db.ping((err) => {
     if(err) {
       console.log('{"status":"failed", "dbconnection": ["localhost","root","softeng_mysql","intelliq22","true"]}');
@@ -148,7 +148,7 @@ app.get('/admin/healthcheck', function(req, res, next) {
   })
 });
 
-app.get('/admin/resetall', function(req, res, next) {
+app.get('/intelliq_api/admin/resetall', function(req, res, next) {
   db.ping((err) => {
     if(err) {
       console.log('{"status":"failed", "reason": '+ err +'}');
@@ -168,7 +168,7 @@ app.get('/admin/resetall', function(req, res, next) {
   })
 });
 
-app.post('/login', function(req, res, next) {
+app.post('/intelliq_api/login', function(req, res, next) {
   const email = req.body.username;
   const password = req.body.password;
 
@@ -186,7 +186,7 @@ app.post('/login', function(req, res, next) {
   )
 });
 
-app.get('/admin/users/:username', function(req, res, next) {
+app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
   const id = req.params.username;
   db.query(
     "SELECT * FROM member WHERE member_id = ?", [id], (err, result) => {
@@ -200,7 +200,7 @@ app.get('/admin/users/:username', function(req, res, next) {
 });
 
 // Get all the questionnaires available
-app.post('/questionnaires', function(req, res, next) {
+app.post('/intelliq_api/questionnaires', function(req, res, next) {
   const id = req.body.id;
   db.query(
     "SELECT * FROM questionnaire_form", [id], (err, result) => {
@@ -215,8 +215,28 @@ app.post('/questionnaires', function(req, res, next) {
   )
 });
 
+// Get all the questionnaires available with specific keyword
+app.post('/intelliq_api/questionnaires/:keyword', function(req, res, next) {
+  const keyword = req.params.keyword;
+  db.query(
+    "SELECT * \
+    FROM questionnaire_form \
+    WHERE questionnaire_id in (SELECT questionnaire_id \
+                               FROM keyword \
+                               WHERE key_word = ? ) ", [keyword], (err, result) => {
+      if(err) {
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
 // Get all the questionnaires of a user
-app.post('/admin/questionnaires', function(req, res, next) {
+app.post('/intelliq_api/admin/questionnaires', function(req, res, next) {
   const id = req.body.id;
   db.query(
     "SELECT * FROM questionnaire_form WHERE member_id = ?", [id], (err, result) => {
@@ -232,7 +252,7 @@ app.post('/admin/questionnaires', function(req, res, next) {
 });
 
 // get all questions for specific questionnaire
-app.get('/admin/questionnaire/:questionnaireID', function(req, res, next) {
+app.get('/intelliq_api/admin/questionnaire/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   db.query(
     "SELECT * \
@@ -254,7 +274,7 @@ app.get('/admin/questionnaire/:questionnaireID', function(req, res, next) {
 });
 
 // Get attributes of only one questionnaire
-app.get('/admin/:questionnaireID', function(req, res, next) {
+app.get('/intelliq_api/admin/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   db.query(
     "SELECT * \
@@ -274,7 +294,7 @@ app.get('/admin/:questionnaireID', function(req, res, next) {
 });
 
 // Get data of a specific question of a specific questionnaire 
-app.get('/admin/question/:questionnaireID/:questionID', function(req, res, next) {
+app.get('/intelliq_api/admin/question/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   const qid = req.params.questionID;
   console.log(qid)
@@ -298,7 +318,7 @@ app.get('/admin/question/:questionnaireID/:questionID', function(req, res, next)
 });
 
 // Get attributes of only one question
-app.get('/admin/question/:questionID', function(req, res, next) {
+app.get('/intelliq_api/admin/question/:questionID', function(req, res, next) {
   const question_id = req.params.questionID;
   db.query(
     "SELECT * \
@@ -317,8 +337,66 @@ app.get('/admin/question/:questionID', function(req, res, next) {
   )
 });
 
+// Get answers for specific questionnaire
+app.get('/intelliq_api/admin/answers/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const questionID = req.params.questionID;
+  db.query(
+    "SELECT N.qid,O.optid,opttext, num \
+     FROM (SELECT distinct qid,optid, (SELECT count(*) \
+                                       FROM (SELECT A._session,qid,optid \
+                                             FROM questionnaire_answer as Q \
+                                             LEFT JOIN ans_consist_of as A \
+                                             ON Q._session = A._session \
+                                             WHERE Q.questionnaire_id = ?) as B \
+                                       WHERE ans_consist_of.qid = B.qid and ans_consist_of.optid = B.optid) as num \
+                                       FROM ans_consist_of) as N \
+    LEFT JOIN _options as O \
+    ON O.optid = N.optid \
+    WHERE N.qid = ?", 
+      [questionnaireID,questionID], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get answers for specific questionnaire
+app.get('/intelliq_api/admin/answers/:questionnaireID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  db.query(
+    "SELECT N.qid,O.optid,opttext, num \
+     FROM (SELECT distinct qid,optid, (SELECT count(*) \
+                                       FROM (SELECT A._session,qid,optid \
+                                             FROM questionnaire_answer as Q \
+                                             LEFT JOIN ans_consist_of as A \
+                                             ON Q._session = A._session \
+                                             WHERE Q.questionnaire_id = ?) as B \
+                                       WHERE ans_consist_of.qid = B.qid and ans_consist_of.optid = B.optid) as num \
+                                       FROM ans_consist_of) as N \
+    LEFT JOIN _options as O \
+    ON O.optid = N.optid", 
+      [questionnaireID], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
 // get questions and options for a specific questionnaire
-app.get('/doanswer2/:questionnaireID', function(req, res, next) {
+app.get('/intelliq_api/doanswer2/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   db.query(
     "SELECT qid,qtext,required,qtype,o.optid,opttext,nextqid \
@@ -342,7 +420,7 @@ app.get('/doanswer2/:questionnaireID', function(req, res, next) {
   )
 });
 
-app.post('/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
+app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   const q_id = req.params.questionID;
   const session = req.params.session;
@@ -374,6 +452,31 @@ app.post('/doanswer/:questionnaireID/:questionID/:session/:optionID', function(r
     }
   )
 });
+
+// Get answers for specific questionnaire and specific question
+app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const questionID = req.params.questionID;
+  db.query(
+    "SELECT A._session,questionnaire_id,qid,optid \
+     FROM questionnaire_answer as Q \
+     LEFT JOIN ans_consist_of as A \
+     ON Q._session = A._session \
+     WHERE Q.questionnaire_id = ? AND A.qid = ?", 
+      [questionnaireID,questionID], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+
 /*
 
 "SELECT * \
