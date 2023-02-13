@@ -25,6 +25,7 @@ CREATE TABLE questionnaire_form(
     member_id char(5),
     primary key (questionnaire_id),
     foreign key (member_id) references Member(member_id)
+		ON DELETE CASCADE
     );
 
 CREATE TABLE keyword(
@@ -32,6 +33,7 @@ CREATE TABLE keyword(
     questionnaire_id char(5),
     primary key (key_word),
     foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
+		ON DELETE CASCADE
     );
 
 CREATE TABLE _options(
@@ -46,6 +48,7 @@ CREATE TABLE questionnaire_answer(
     questionnaire_id char(5),
     primary key (_session),
     foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
+		ON DELETE CASCADE
     );
 	
 CREATE TABLE form_opt_and_questions(
@@ -53,7 +56,8 @@ CREATE TABLE form_opt_and_questions(
 	qid char(8),
     optid char(10),
     primary key (questionnaire_id,qid,optid),
-    foreign key (questionnaire_id) references questionnaire_form(questionnaire_id),
+    foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
+		ON DELETE CASCADE,
     foreign key (qid) references question(qid),
     foreign key (optid) references _options(optid)
     );
@@ -63,7 +67,8 @@ CREATE TABLE ans_consist_of (
     qid char(8),
     optid char(10),
      primary key (_session,qid,optid),
-     foreign key (_session) references questionnaire_answer(_session),
+     foreign key (_session) references questionnaire_answer(_session)
+		ON DELETE CASCADE,
     foreign key (qid) references question(qid),
     foreign key (optid) references _options(optid)
     );
