@@ -476,7 +476,50 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
   )
 });
 
-
+//Reset all answers of a questionaire
+app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  db.query(
+    "DELETE FROM ans_consist_of \
+     WHERE _session IN ( \
+     SELECT _session FROM questionnaire_answer \
+     WHERE questionnaire_id = ?",
+     [questionnaireID], (err, result) => {
+      if(err) {
+        console.log('{"status":"failed", "reason": '+ err +'}');
+        return res.json([
+        {
+          "status":"failed", 
+          "reason": err
+        }
+        ])     
+      }
+      else {
+        db.query(
+          "DELETE FROM questionnaire_answer \
+           WHERE questionnaire_id = ?"
+          [questionnaireID], (err, result) => {
+                  if(err) {
+                    console.log('{"status":"failed", "reason": '+ err +'}');
+                    return res.json([
+                      {
+                        "status":"failed", 
+                        "reason": err
+                      }
+                    ])
+                  }
+                  console.log('{"status":"OK"}');
+                  res.json([
+                    {
+                      "status":"OK", 
+                    }
+                  ])
+                  }
+            )
+          }
+        }
+  )
+});
 /*
 
 "SELECT * \
