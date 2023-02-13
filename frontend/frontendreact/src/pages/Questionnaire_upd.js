@@ -24,7 +24,7 @@ function Questionnaire_upd({user, setUser}){
     const data = new FormData();
     data.append('file',file.selectedFile,file.selectedFile.name);
     console.log(data)
-    axios.post("http://localhost:3000/upload/"+user.member_id,data,{
+    axios.post("http://localhost:9103/intelliq_api/upload/"+user.member_id,data,{
         onUploadProgress: (ProgressEvent) => {
           setLoading({ Loading: (ProgressEvent.loaded / ProgressEvent.total) * 100});
         }

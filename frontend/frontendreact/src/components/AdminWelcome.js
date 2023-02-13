@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 function AdminWelcome({user}){
 
   const onHealthcheck = (e) => {
-    axios.get("http://localhost:3000/admin/healthcheck")
+    axios.get("http://localhost:9103/intelliq_api/admin/healthcheck")
       .then((response) => {
         if(response){
           console.log(response.data[0]);
@@ -40,7 +40,7 @@ function AdminWelcome({user}){
   }
 
   const onResetall = (e) => {
-    axios.get("http://localhost:3000/admin/resetall")
+    axios.get("http://localhost:9103/intelliq_api/admin/resetall")
       .then((response) => {
         if(response){
           console.log(response.data[0]);
@@ -78,7 +78,7 @@ function AdminWelcome({user}){
       <Link to='/intelliq_api/admin/questionnaire_upd'>
         <button> Create a questionnaire </button><br/><br/>
       </Link>
-      <Link to='/intelliq_api/questionnaires'>
+      <Link to='/intelliq_api/chooseKeyword'>
         <button> Answer a questionnaire </button><br/><br/><br/>
       </Link>
       <button onClick={onResetall}> Reset </button><br/><br/>

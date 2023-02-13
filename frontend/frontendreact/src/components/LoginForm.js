@@ -10,7 +10,7 @@ function LoginForm({Login, error}){
     e.preventDefault();
     Login(details);
   }
-
+  
   return (
     <form onSubmit={submitHandler}>
       <div className="form-inner">

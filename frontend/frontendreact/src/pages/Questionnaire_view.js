@@ -12,12 +12,12 @@ function Questionnaire_view({user, setUser}){
   useEffect(() => {
     const questionnaire = (e) => {
       console.log(user.member_id);
-      axios.get("http://localhost:3000/admin/"+params.questionnaireID)
+      axios.get("http://localhost:9103/intelliq_api/admin/"+params.questionnaireID)
         .then((response) => {
           setData1(response.data)
           console.log(response.data);
         })
-      axios.get("http://localhost:3000/admin/questionnaire/"+params.questionnaireID)
+      axios.get("http://localhost:9103/intelliq_api/admin/questionnaire/"+params.questionnaireID)
         .then((response) => {
           setData(response.data)
           console.log(response.data);
@@ -33,9 +33,10 @@ function Questionnaire_view({user, setUser}){
     
       <div className="questionnaires">
         <h2> The questions for your questionnaire: <span>{data1.map((getcate) => (getcate.questionnaire_title))}</span> </h2>
-        <Link to='/intelliq_api/questionnaires'>
+        <Link to='/intelliq_api/admin/questionnaires'>
           <button >Back</button><br/><br/>
         </Link>
+        <div className="background">
         <div className="table">
         <table>
           <thead>
@@ -63,6 +64,7 @@ function Questionnaire_view({user, setUser}){
             ))}
           </tbody>
         </table>
+        </div>
         </div>
       </div>
     

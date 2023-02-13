@@ -10,7 +10,7 @@ function AvailableQuest({user, setUser}){
   useEffect(() => {
     const questionnaires = (e) => {
       console.log(user.member_id);
-      axios.post("http://localhost:3000/admin/questionnaires",{ id: user.member_id })
+      axios.post("http://localhost:9103/intelliq_api/admin/questionnaires",{ id: user.member_id })
         .then((response) => {
           setData(response.data)
           console.log(response.data);
@@ -50,7 +50,7 @@ function AvailableQuest({user, setUser}){
                   <Link to={'/intelliq_api/questionnaire/'+getcate.questionnaire_id}>
                     <button> Delete </button>
                   </Link>&nbsp;&nbsp;
-                  <Link to={'/intelliq_api/questionnaire/'+getcate.questionnaire_id}>
+                  <Link to={'/intelliq_api/stats/'+getcate.questionnaire_id}>
                     <button> Stats </button>
                   </Link>
                 </td>

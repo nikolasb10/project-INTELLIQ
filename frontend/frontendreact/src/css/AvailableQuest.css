@@ -1,5 +1,8 @@
 .questionnaires{
-  height: 100vh;
+  height: 200vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: repeat;
   background-color: #020B20;
   margin-top: center;
   width: 100%;
@@ -34,6 +37,9 @@
 .questionnaires button:hover {
   background-position: 100% 0%;
 }
+
+
+
 .table {
   position: center;
   width: 100%;
@@ -88,4 +94,11 @@ td {
 }
 .inputfile + label {
 	cursor: pointer; /* "hand" cursor */
+}
+
+.Charts {
+  display: flex;
+  justify-content: space-around; 
+  padding: 20px; 
+  height: 50%; 
 }
