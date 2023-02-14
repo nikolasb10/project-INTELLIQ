@@ -30,7 +30,7 @@ db.connect(err => {
 module.exports = { db };
 
 // for file upload
-app.post('/intelliq_api/upload/:member_id', (req, res) => {
+app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
   const filename =  Date.now() + '-' + req.files.file.name;
   const md5 = req.files.file.md5;
   const saveAs = `${md5}_${filename}`;
@@ -46,7 +46,7 @@ app.post('/intelliq_api/upload/:member_id', (req, res) => {
         json_data = JSON.parse(str);
         var q_id = json_data["questionnaireID"];
         var q_title = json_data["questionnaireTitle"];
-        var member_id = req.params.member_id;
+        var member_id = req.body.member_id;
         //console.log(json_data["questions"][0]["qID"]);
         var keywords = "";
         for(const i in json_data["keywords"]) {
@@ -204,6 +204,150 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
   )
 });
 
+
+// Backend endpoints, mandatory
+// a) get all questions for specific questionnaire
+app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  db.query(
+    "SELECT * \
+     FROM question \
+     WHERE qid in ( SELECT qid \
+                   FROM form_opt_and_questions \
+                   WHERE questionnaire_id = ?)", 
+      [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        db.query(
+          "SELECT * \
+           FROM questionnaire_form \
+           WHERE questionnaire_id = ?)", 
+            [questionnaire_id], (err, result) => {
+            if(err) {
+              console.log(err)
+              res.send({err: err})
+            }
+            else {
+              console.log(result);
+              res.send(result);
+            }
+          }
+        )
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// b) Get data of a specific question of a specific questionnaire 
+app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const qid = req.params.questionID;
+  console.log(qid)
+  db.query(
+    "SELECT * \
+     FROM _options \
+     WHERE optid in ( SELECT optid \
+                   FROM form_opt_and_questions \
+                   WHERE questionnaire_id = ? and qid = ?)", 
+      [questionnaire_id,qid], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// c) post option to question for specific questionnaire and session
+app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const q_id = req.params.questionID;
+  const session = req.params.session;
+  const optid = req.params.optionID;
+  console.log(optid)
+
+  db.query(
+    "INSERT INTO questionnaire_answer VALUES (?,?)", 
+      [session,questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+  db.query(
+    "INSERT INTO ans_consist_of VALUES (?,?,?)", 
+      [session,q_id,optid], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+});
+
+// d) Get answers for specific questionnaire and specific session
+app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const session = req.params.session;
+  db.query(
+    "SELECT questionnaire_id, A._session, qid, optid \
+     FROM ans_consist_of AS A \
+     LEFT JOIN questionnaire_answer AS Q \
+     ON A._session = Q._session \
+     WHERE A._session = ?", 
+      [session], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// e) Get answers for specific questionnaire and specific question
+app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const questionID = req.params.questionID;
+  db.query(
+    "SELECT questionnaire_id,qid,A._session,optid \
+     FROM questionnaire_answer as Q \
+     LEFT JOIN ans_consist_of as A \
+     ON Q._session = A._session \
+     WHERE Q.questionnaire_id = ? AND A.qid = ?", 
+      [questionnaireID,questionID], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+
 // Get all the questionnaires available
 app.get('/intelliq_api/questionnaires', function(req, res, next) {
   const id = req.body.id;
@@ -256,28 +400,6 @@ app.post('/intelliq_api/admin/questionnaires', function(req, res, next) {
   )
 });
 
-// get all questions for specific questionnaire
-app.get('/intelliq_api/admin/questionnaire/:questionnaireID', function(req, res, next) {
-  const questionnaire_id = req.params.questionnaireID;
-  db.query(
-    "SELECT * \
-     FROM question \
-     WHERE qid in ( SELECT qid \
-                   FROM form_opt_and_questions \
-                   WHERE questionnaire_id = ?)", 
-      [questionnaire_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-        res.send(result);
-      }
-    }
-  )
-});
-
 // Get attributes of only one questionnaire
 app.get('/intelliq_api/admin/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
@@ -298,30 +420,6 @@ app.get('/intelliq_api/admin/:questionnaireID', function(req, res, next) {
   )
 });
 
-// Get data of a specific question of a specific questionnaire 
-app.get('/intelliq_api/admin/question/:questionnaireID/:questionID', function(req, res, next) {
-  const questionnaire_id = req.params.questionnaireID;
-  const qid = req.params.questionID;
-  console.log(qid)
-  db.query(
-    "SELECT * \
-     FROM _options \
-     WHERE optid in ( SELECT optid \
-                   FROM form_opt_and_questions \
-                   WHERE questionnaire_id = ? and qid = ?)", 
-      [questionnaire_id,qid], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-        res.send(result);
-      }
-    }
-  )
-});
-
 // Get attributes of only one question
 app.get('/intelliq_api/admin/question/:questionID', function(req, res, next) {
   const question_id = req.params.questionID;
@@ -330,63 +428,6 @@ app.get('/intelliq_api/admin/question/:questionID', function(req, res, next) {
      FROM question \
      WHERE qid = ?", 
       [question_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-        res.send(result);
-      }
-    }
-  )
-});
-
-// post option to question for specific questionnaire and session
-app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
-  const questionnaire_id = req.params.questionnaireID;
-  const q_id = req.params.questionID;
-  const session = req.params.session;
-  const optid = req.params.optionID;
-  console.log(optid)
-
-  db.query(
-    "INSERT INTO questionnaire_answer VALUES (?,?)", 
-      [session,questionnaire_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-      }
-    }
-  )
-  db.query(
-    "INSERT INTO ans_consist_of VALUES (?,?,?)", 
-      [session,q_id,optid], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-      }
-    }
-  )
-});
-
-// Get answers for specific questionnaire and specific question
-app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
-  const questionnaireID = req.params.questionnaireID;
-  const questionID = req.params.questionID;
-  db.query(
-    "SELECT A._session,questionnaire_id,qid,optid \
-     FROM questionnaire_answer as Q \
-     LEFT JOIN ans_consist_of as A \
-     ON Q._session = A._session \
-     WHERE Q.questionnaire_id = ? AND A.qid = ?", 
-      [questionnaireID,questionID], (err, result) => {
       if(err) {
         console.log(err)
         res.send({err: err})

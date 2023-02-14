@@ -17,7 +17,7 @@ function Questionnaire_view({user, setUser}){
           setData1(response.data)
           console.log(response.data);
         })
-      axios.get("http://localhost:9103/intelliq_api/admin/questionnaire/"+params.questionnaireID)
+      axios.get("http://localhost:9103/intelliq_api/questionnaire/"+params.questionnaireID)
         .then((response) => {
           setData(response.data)
           console.log(response.data);

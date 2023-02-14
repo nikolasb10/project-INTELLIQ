@@ -10,7 +10,7 @@ function Choose_questionnaire({ keyword, user, questionnairedata, setQuestionnai
 
   useEffect(() => {
     const questionnaires = (e) => {
-      axios.post("http://localhost:9103/intelliq_api/questionnaires")
+      axios.get("http://localhost:9103/intelliq_api/questionnaires")
         .then((response) => {
           setData(response.data)
           console.log(response.data);

@@ -17,7 +17,7 @@ function Welcome({user, setUser}){
       {(user.mstatus === "a") ? (
           <AdminWelcome user={user} Logout={Logout} />
         ) : (
-          <Link to='/intelliq_api/questionnaires'>
+          <Link to='/intelliq_api/chooseKeyword'>
             <button> Answer a questionnaire </button>
           </Link>
         )
