@@ -4,12 +4,13 @@ CREATE TABLE Member(
         First_Name varchar(20) not null,
         Last_Name varchar(20) not null,
         email varchar(50),
-        password varchar(50),
+        passwrd varchar(50),
         Gender varchar(20),
         Date_of_Birth varchar(10) not null,
         primary key (member_id)
         );
     
+
 CREATE TABLE question(
 	qid char(8),
     qtext varchar(50),
@@ -18,6 +19,8 @@ CREATE TABLE question(
     primary key (qid)
     );
     
+
+
 CREATE TABLE questionnaire_form(
 	questionnaire_id char(5),
     questionnaire_title varchar(50),
@@ -25,15 +28,15 @@ CREATE TABLE questionnaire_form(
     member_id char(5),
     primary key (questionnaire_id),
     foreign key (member_id) references Member(member_id)
-		ON DELETE CASCADE
     );
+
+
 
 CREATE TABLE keyword(
 	key_word char(20),
     questionnaire_id char(5),
     primary key (key_word),
     foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
-		ON DELETE CASCADE
     );
 
 CREATE TABLE _options(
@@ -43,21 +46,22 @@ CREATE TABLE _options(
     primary key (optid)
     );
 
+
+
 CREATE TABLE questionnaire_answer(
 	_session char(4),
     questionnaire_id char(5),
     primary key (_session),
     foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
-		ON DELETE CASCADE
     );
-	
+
+
 CREATE TABLE form_opt_and_questions(
 	questionnaire_id char(5),
 	qid char(8),
     optid char(10),
     primary key (questionnaire_id,qid,optid),
-    foreign key (questionnaire_id) references questionnaire_form(questionnaire_id)
-		ON DELETE CASCADE,
+    foreign key (questionnaire_id) references questionnaire_form(questionnaire_id),
     foreign key (qid) references question(qid),
     foreign key (optid) references _options(optid)
     );

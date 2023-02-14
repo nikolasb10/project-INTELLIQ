@@ -1,29 +1,39 @@
          /* DELETE TRIGGERS */
+
 /* Delete Questionnaire */
+
+DROP TRIGGER questionnaire_delete
 delimiter //
 CREATE TRIGGER questionnaire_delete 
-	AFTER DELETE ON questionnaire_form
+	BEFORE DELETE ON questionnaire_form
     FOR EACH ROW
 	BEGIN
 		-- Disable foreign key checks
 		SET FOREIGN_KEY_CHECKS = 0;
 		-- Delete related rows in other tables
-	    DELETE FROM questionnaire_answer WHERE questionnaire_id = OLD.questionnaire_id;
-	    DELETE FROM ans_consist_of WHERE qid IN ( 
+        DELETE FROM keyword WHERE questionnaire_id = OLD.questionnaire_id;
+	    
+        DELETE FROM questionnaire_answer WHERE questionnaire_id = OLD.questionnaire_id;
+        
+        DELETE FROM ans_consist_of WHERE qid IN ( 
 			SELECT qid FROM form_opt_and_questions
 				WHERE questionnaire_id = OLD.questionnaire_id);
-	    DELETE FROM question WHERE qid IN ( 
+	    
+        DELETE FROM question WHERE qid IN ( 
 			SELECT qid FROM form_opt_and_questions
 				WHERE questionnaire_id = OLD.questionnaire_id);
-		DELETE FROM _options WHERE optid IN (
+		
+        DELETE FROM _options WHERE optid IN (
 			SELECT optid FROM form_opt_and_questions
 				WHERE questionnaire_id = OLD.questionnaire_id);
-		DELETE FROM keyword WHERE questionnaire_id = OLD.questionnaire_id;
-	    DELETE FROM form_opt_and_questions WHERE questionnaire_id = OLD.questionnaire_id;
-		-- Re-enable foreign key checks
+	    
+        DELETE FROM form_opt_and_questions WHERE questionnaire_id = OLD.questionnaire_id;
+		
+        -- Re-enable foreign key checks
 		SET FOREIGN_KEY_CHECKS = 1;
 	END;//
 delimiter ;
+
 
 /* Delete Member */
 delimiter //
@@ -58,7 +68,10 @@ CREATE TRIGGER Member_delete
 END;//
 delimiter ;
 
+
+cd
 delimiter //
+DROP TRIGGER question_delete_check;
 CREATE TRIGGER question_delete_check
 BEFORE DELETE ON question
 FOR EACH ROW

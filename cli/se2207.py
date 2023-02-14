@@ -90,11 +90,17 @@ def questionnaire(questionnaire_id):
         else:
             click.echo("Request failed")
 
-'''
+
 @cli.command()
 @click.option('--source', '-src', prompt=False, help='The Questionnaire ID.')
 def questionnaire_upd(source):
-'''
+    if logged_in:
+        endpoint = f"http://localhost:9103/intelliq_api/admin/questionnaire_upd"
+        response = requests.post(endpoint)
+        if response.status_code == 200:
+                click.echo(response.json())
+        else:
+            click.echo("Request failed")
 
 
 
@@ -173,6 +179,7 @@ def resetq(questionnaire_id):
             click.echo("Request failed")
     else:
         click.echo("You have to login first.")
+
 
 if __name__ == '__main__':
     cli()
