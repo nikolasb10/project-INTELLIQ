@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const cors = require('cors');
 const multer = require('multer');
 const fileUpload = require("express-fileupload");
+const csv = require('csv-stringify');
 
 app.use(cors());
 app.use(express.json());
@@ -189,18 +190,22 @@ app.post('/intelliq_api/login', function(req, res, next) {
 app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
   const id = req.params.username;
   db.query(
-    "SELECT * FROM member WHERE member_id = ?", [id], (err, result) => {
+    "SELECT * FROM member WHERE First_Name = ?", [id], (err, result) => {
       if(err) {
         console.log(err)
       }
-      res.send(result);
+      csv.stringify(result, (err, output) => {
+        res.set('Content-Type', 'text/csv');
+        res.send(output);
+      });
+      //res.send(result);
       console.log(result);
     }
   )
 });
 
 // Get all the questionnaires available
-app.post('/intelliq_api/questionnaires', function(req, res, next) {
+app.get('/intelliq_api/questionnaires', function(req, res, next) {
   const id = req.body.id;
   db.query(
     "SELECT * FROM questionnaire_form", [id], (err, result) => {
@@ -216,7 +221,7 @@ app.post('/intelliq_api/questionnaires', function(req, res, next) {
 });
 
 // Get all the questionnaires available with specific keyword
-app.post('/intelliq_api/questionnaires/:keyword', function(req, res, next) {
+app.get('/intelliq_api/questionnaires/:keyword', function(req, res, next) {
   const keyword = req.params.keyword;
   db.query(
     "SELECT * \
@@ -337,7 +342,64 @@ app.get('/intelliq_api/admin/question/:questionID', function(req, res, next) {
   )
 });
 
-// Get answers for specific questionnaire
+// post option to question for specific questionnaire and session
+app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const q_id = req.params.questionID;
+  const session = req.params.session;
+  const optid = req.params.optionID;
+  console.log(optid)
+
+  db.query(
+    "INSERT INTO questionnaire_answer VALUES (?,?)", 
+      [session,questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+  db.query(
+    "INSERT INTO ans_consist_of VALUES (?,?,?)", 
+      [session,q_id,optid], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+      }
+    }
+  )
+});
+
+// Get answers for specific questionnaire and specific question
+app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const questionID = req.params.questionID;
+  db.query(
+    "SELECT A._session,questionnaire_id,qid,optid \
+     FROM questionnaire_answer as Q \
+     LEFT JOIN ans_consist_of as A \
+     ON Q._session = A._session \
+     WHERE Q.questionnaire_id = ? AND A.qid = ?", 
+      [questionnaireID,questionID], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get answers for specific questionnaire and specific question (for stats)
 app.get('/intelliq_api/admin/answers/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
   const questionID = req.params.questionID;
@@ -420,61 +482,7 @@ app.get('/intelliq_api/doanswer2/:questionnaireID', function(req, res, next) {
   )
 });
 
-app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
-  const questionnaire_id = req.params.questionnaireID;
-  const q_id = req.params.questionID;
-  const session = req.params.session;
-  const optid = req.params.optionID;
-  console.log(optid)
 
-  db.query(
-    "INSERT INTO questionnaire_answer VALUES (?,?)", 
-      [session,questionnaire_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-      }
-    }
-  )
-  db.query(
-    "INSERT INTO ans_consist_of VALUES (?,?,?)", 
-      [session,q_id,optid], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-      }
-    }
-  )
-});
-
-// Get answers for specific questionnaire and specific question
-app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
-  const questionnaireID = req.params.questionnaireID;
-  const questionID = req.params.questionID;
-  db.query(
-    "SELECT A._session,questionnaire_id,qid,optid \
-     FROM questionnaire_answer as Q \
-     LEFT JOIN ans_consist_of as A \
-     ON Q._session = A._session \
-     WHERE Q.questionnaire_id = ? AND A.qid = ?", 
-      [questionnaireID,questionID], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-        res.send(result);
-      }
-    }
-  )
-});
 
 //Reset all answers of a questionaire
 app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {

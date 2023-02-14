@@ -9,7 +9,7 @@ function MainPage() {
     <div className="MainPage">
       <h1 className="Title"> Welcome to Intelliq!</h1>
       <div className="Box">
-        <Link to='/intelliq_api/questionnaires'>
+        <Link to='/intelliq_api/choosekeyword'>
           <button type="button" className="btn">Answer a questionnaire anonymously</button>
         </Link>
         <Link to='/intelliq_api/login'>

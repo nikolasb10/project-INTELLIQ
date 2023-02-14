@@ -1,0 +1,104 @@
+.stats{
+    height: 200vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: repeat;
+    background-color: #020B20;
+    margin-top: center;
+    width: 1000vh;
+    padding: 15px 30px;
+  }
+  
+  .stats h2 {
+    color: #95A1C1;
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 30px;
+  }
+  
+  .stats h2 span {
+    color: #4B93D4;
+    font-weight: 700;
+  }
+  
+  .stats button {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background-image: linear-gradient(to right, #87B3F5 50%, #87B3F5 50%, #0F8360);
+    background-size: 200%;
+    background-position: 0%;
+    transition: 0.4s;
+    color: #FFF;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  
+  .stats button:hover {
+    background-position: 100% 0%;
+  }
+  
+  
+  
+  .table {
+    position: center;
+    width: 100%;
+    background-color: #FFFFFF;
+  }
+  th {
+    padding: 15px;
+    width: 100vh;
+    border-bottom: 1px solid #ddd;
+    border-side: 1px solid #ddd;
+    text-align: center;
+  }
+  td {
+    padding: 15px;
+    width: 100vh;
+    border-bottom: 1px solid #ddd;
+    border-side: 1px solid #ddd;
+    text-align: left;
+  }
+  tr:hover {background-color: lightblue;}
+  th {
+    background-color: #1322AB;
+    color: white;
+  }
+  td {
+    text-align: center;
+    color: #000000;
+  }
+  
+  .letters {
+    text-align: center;
+    color: #FFFFFF;
+  }
+  
+  .inputfile {
+      width: 0.1px;
+      height: 0.1px;
+      position: absolute;
+      z-index: -1;
+  }
+  .inputfile + label {
+      font-size: 1.25em;
+      font-weight: 700;
+      color: white;
+      background-color: black;
+      display: inline-block;
+  }
+  
+  .inputfile:focus + label,
+  .inputfile + label:hover {
+      background-color: red;
+  }
+  .inputfile + label {
+      cursor: pointer; /* "hand" cursor */
+  }
+  
+  .Charts {
+    display: flex;
+    justify-content:left; 
+    padding: 20px; 
+    height: 50%; 
+  }

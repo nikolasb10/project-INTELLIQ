@@ -1,5 +1,5 @@
 import {Link, useNavigate} from 'react-router-dom';
-import {React, useState} from 'react';
+import React, {useState} from 'react';
 import LoginForm from '../components/LoginForm';
 import Welcome from './Welcome';
 import axios from 'axios';
@@ -14,7 +14,7 @@ function LoginPage({user, setUser}) {
 
   const Login = details => {
     console.log(details);
-    axios.post("http://localhost:3000/login", {
+    axios.post("http://localhost:9103/intelliq_api/login", {
       username: details.email,
       password: details.password,
     }).then((response) => {

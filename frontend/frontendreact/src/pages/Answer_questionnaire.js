@@ -4,7 +4,7 @@ import axios from 'axios'
 
 import '../css/Answer.css';
 
-function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
+function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata }) {
     const params = useParams();
     const [title, setTitle] = useState('');
     const [questions, setQuestions] = useState([{qid: '', qtext: '', required: '', qtype: ''}]);
@@ -27,7 +27,7 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
     }
 
     const getoptions1 = (nextQuestion) => {
-        axios.get("http://localhost:3000/admin/question/"+params.questionnaireID+"/"+params.questionnaireID+"P00")
+        axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+params.questionnaireID+"P00")
         .then((response) => {
             setOptions(response.data)
           console.log(response.data);
@@ -35,15 +35,8 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
     }
 
     useEffect(() => {
-        const gettitle = (e) => {
-            axios.get("http://localhost:3000/admin/"+params.questionnaireID)
-            .then((response) => {
-              console.log(response.data);
-              setTitle(response.data)
-            })
-        }
         const getquestions = (e) => {
-            axios.get("http://localhost:3000/admin/questionnaire/"+params.questionnaireID)
+            axios.get("http://localhost:9103/intelliq_api/admin/questionnaire/"+params.questionnaireID)
             .then((response) => {
               console.log(response.data);
               setQuestions(response.data)
@@ -55,19 +48,11 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
           console.log(session);
         },[]);
 
-    const handleAnswerOptionClick = (isCorrect) => {
-        const nextQuestion = currentQuestion + 1;
-        if (nextQuestion < questions.length) {
-            setCurrentQuestion(nextQuestion);
-        } else {
-            setFinish(true);
-        }
-    };
     const handleOptionClick = (optid) => {
         const nextQuestion = currentQuestion + 1;
         console.log(optid)
         const getoptions = (nextQuestion) => {
-            axios.get("http://localhost:3000/admin/question/"+params.questionnaireID+"/"+questions[nextQuestion]["qid"])
+            axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+questions[nextQuestion]["qid"])
             .then((response) => {
                 setOptions(response.data)
               console.log(response.data);
@@ -75,7 +60,7 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
         }
 
         const submitoption = (nextQuestion) => {
-            axios.post("http://localhost:3000/doanswer/"+params.questionnaireID+"/"+questions[currentQuestion]["qid"]+"/"+session+"/"+optid)
+            axios.post("http://localhost:9103/intelliq_api/doanswer/"+params.questionnaireID+"/"+questions[currentQuestion]["qid"]+"/"+session+"/"+optid)
             .then((response) => {
               console.log(response);
             }) 
@@ -101,7 +86,7 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
     const showoptions = (option) => {
         if(option.opttext=="<open string>") {
             return (
-                <div><br/><br/><br/><br/><br/>
+                <div><br/><br/><br/><br/>
                     <input type="text" name="name" placeholder="Email" onChange={handleChange}/><br/><br/><br/>
                     <button1 onClick={() => handleOptionClick(option.optid)}>Next</button1>
                 </div>
@@ -118,7 +103,7 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
                 {finish ? (
                     <div className='finish'><br/>
                         Finished! <br/><br/>
-                        <Link to='/intelliq_api'>
+                        <Link to='/intelliq_api/questionnaires'>
                             <button1>Exit</button1>
                         </Link>
                     </div>          
@@ -129,9 +114,17 @@ function Answer_questionnaire({ questionnairedata, setQuestionnairedata }) {
                                 <span>Question {currentQuestion + 1}</span>/{questions.length}
                             </div>
                             <div className='question-text'>{questions[currentQuestion]["qtext"]}</div><br/><br/><br/><br/><br/>
-                            <Link to='/intelliq_api'>
-                                <button1> Exit </button1>
-                            </Link>
+                            {(user.email != "") ? 
+                            (
+                                <Link to='/intelliq_api/login'>
+                                    <button1> Exit  </button1><br/><br/>
+                                </Link>                            
+                            ) : (
+                                <Link to='/intelliq_api'>
+                                    <button1> Exit </button1>
+                                </Link>
+                            )
+                            }
                         </div>
                         <div className='answer-section'>
                             {options.map((answerOption) => (

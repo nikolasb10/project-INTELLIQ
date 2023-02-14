@@ -12,12 +12,12 @@ function Question_view({user, setUser}){
   useEffect(() => {
     const questionnaire = (e) => {
       console.log(user.member_id);
-      axios.get("http://localhost:3000/admin/question/"+params.questionID)
+      axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionID)
         .then((response) => {
           setData1(response.data)
           console.log(response.data);
         })
-      axios.get("http://localhost:3000/admin/question/"+params.questionnaireID+"/"+params.questionID)
+      axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+params.questionID)
         .then((response) => {
           setData(response.data)
           console.log(response.data);
