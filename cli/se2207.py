@@ -7,6 +7,8 @@ import os
 logged_in = False
 mstatus = 0
 
+
+#Create temp User Info json file
 if os.path.exists("usr_details.json"):
     with open("usr_details.json", "r") as f:
         data = json.load(f)
@@ -22,6 +24,7 @@ def cli():
     pass
 
 
+#Login
 @cli.command()
 @click.option('--username', '-u', prompt=False, help='Username for login.')
 @click.option('--passw', '-p', prompt=False, hide_input=True, help='Password for login.')
@@ -37,6 +40,8 @@ def login(username,passw):
     #print(response.json())
 
 
+
+#Health Check
 @cli.command()
 def healthcheck():
     if logged_in:
@@ -78,7 +83,7 @@ def resetall():
 
 
 
-#
+
 @cli.command()
 @click.option('--questionnaire_id', '-qid', prompt=False, help='The Questionnaire ID.')
 def questionnaire(questionnaire_id):
@@ -91,12 +96,18 @@ def questionnaire(questionnaire_id):
             click.echo("Request failed")
 
 
+
+#Upload a Questionnaire
 @cli.command()
-@click.option('--source', '-src', prompt=False, help='The Questionnaire ID.')
+@click.option('--source', '-src', prompt=False)
 def questionnaire_upd(source):
     if logged_in:
         endpoint = f"http://localhost:9103/intelliq_api/admin/questionnaire_upd"
-        response = requests.post(endpoint)
+       
+        path = '../api-backend/public/'+source
+       
+        response = requests.post(endpoint, files={'file': open(path, 'rb')})
+
         if response.status_code == 200:
                 click.echo(response.json())
         else:
