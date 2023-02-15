@@ -222,22 +222,62 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
       }
       else {
         db.query(
-          "SELECT * \
+          "SELECT questionnaire_id,questionnaire_title \
            FROM questionnaire_form \
-           WHERE questionnaire_id = ?)", 
-            [questionnaire_id], (err, result) => {
+           WHERE questionnaire_id = ?", 
+            [questionnaire_id], (err, result1) => {
             if(err) {
               console.log(err)
               res.send({err: err})
             }
             else {
-              console.log(result);
-              res.send(result);
+              db.query(
+                "SELECT key_word \
+                FROM keyword \
+                WHERE questionnaire_id = ?", 
+                  [questionnaire_id], (err, result2) => {
+                  if(err) {
+                    console.log(err)
+                    res.send({err: err})
+                  }
+                  else {
+                    // below we change the three responses to create the result that is asked
+                    jsonstring = JSON.stringify(result)
+                    json_questions =JSON.parse(jsonstring)
+
+                    jsonstring1 = JSON.stringify(result1)
+                    json_everything =JSON.parse(jsonstring1)
+
+                    jsonstring2 = JSON.stringify(result2)
+                    json_keywords =JSON.parse(jsonstring2)
+
+                    console.log(json_questions);
+                    console.log(json_everything);
+
+                    json_everything[0]["keywords"] = [];
+                    var counter = 0;
+                    for(const j in json_keywords) {
+                      json_everything[0]["keywords"].push(json_keywords[counter]["key_word"]);
+                      counter = counter + 1;
+                    }
+
+                    json_everything[0]["questions"] = [];
+                    var counter = 0;
+                    for(const j in json_questions) {
+                      json_questions[counter]["qid"] = json_questions[counter]["qid"].slice(5, 8)
+                      json_everything[0]["questions"].push(json_questions[counter]);
+                      counter = counter + 1;
+                    }
+    
+                    final = json_everything[0];
+                    console.log(final);
+                    res.send(final);
+                  }
+                }
+              )
             }
           }
         )
-        console.log(result);
-        res.send(result);
       }
     }
   )
@@ -246,22 +286,59 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
 // b) Get data of a specific question of a specific questionnaire 
 app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
-  const qid = req.params.questionID;
-  console.log(qid)
+  const str = "QQ000"
+  const questionID = str + req.params.questionID; 
   db.query(
     "SELECT * \
      FROM _options \
      WHERE optid in ( SELECT optid \
                    FROM form_opt_and_questions \
                    WHERE questionnaire_id = ? and qid = ?)", 
-      [questionnaire_id,qid], (err, result) => {
+      [questionnaire_id,questionID], (err, result) => {
       if(err) {
         console.log(err)
         res.send({err: err})
       }
       else {
-        console.log(result);
-        res.send(result);
+        db.query(
+          "SELECT distinct questionnaire_id,Q.qid,qtext,required,qtype \
+           FROM question as Q  \
+           LEFT JOIN form_opt_and_questions as F\
+           ON Q.qid = F.qid \
+           WHERE Q.qid = ?", 
+            [questionID], (err, result1) => {
+            if(err) {
+              console.log(err)
+              res.send({err: err})
+            }
+            else {
+              jsonstring = JSON.stringify(result)
+              json_options =JSON.parse(jsonstring)
+
+              jsonstring1 = JSON.stringify(result1)
+              json_everything =JSON.parse(jsonstring1)
+
+              console.log(json_options);
+              console.log(json_everything);
+
+              json_everything[0]["options"] = [];
+              var counter = 0;
+              for(const j in json_options) {
+                json_options[counter]["optid"] = json_options[counter]["optid"].slice(5, 10)
+                json_options[counter]["nextqid"] = json_options[counter]["nextqid"].slice(5, 8)
+                json_everything[0]["options"].push(json_options[counter]);
+                counter = counter + 1;
+              }
+              
+              final = json_everything[0];
+
+              final["qid"] = final["qid"].slice(5,8);
+
+              console.log(final);
+              res.send(final);
+            }
+          }
+        )
       }
     }
   )
@@ -270,10 +347,10 @@ app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res
 // c) post option to question for specific questionnaire and session
 app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
-  const q_id = req.params.questionID;
+  const str = "QQ000"
+  const questionID = str + req.params.questionID;  
   const session = req.params.session;
   const optid = req.params.optionID;
-  console.log(optid)
 
   db.query(
     "INSERT INTO questionnaire_answer VALUES (?,?)", 
@@ -289,7 +366,7 @@ app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID
   )
   db.query(
     "INSERT INTO ans_consist_of VALUES (?,?,?)", 
-      [session,q_id,optid], (err, result) => {
+      [session,questionID,optid], (err, result) => {
       if(err) {
         console.log(err)
         res.send({err: err})
@@ -306,7 +383,7 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
   const questionnaireID = req.params.questionnaireID;
   const session = req.params.session;
   db.query(
-    "SELECT questionnaire_id, A._session, qid, optid \
+    "SELECT qid, optid \
      FROM ans_consist_of AS A \
      LEFT JOIN questionnaire_answer AS Q \
      ON A._session = Q._session \
@@ -317,8 +394,28 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
         res.send({err: err})
       }
       else {
-        console.log(result);
-        res.send(result);
+        jsonstring = JSON.stringify(result)
+        json_result =JSON.parse(jsonstring)
+
+        const others = {
+          questionnaireID: questionnaireID,
+          session: session
+        };
+
+        jsonstring_others = JSON.stringify(others)
+        json_others =JSON.parse(jsonstring_others)
+
+        json_others["answers"] = [];
+
+        var counter = 0;
+        for(const j in json_result) {
+          json_result[counter]["qid"] = json_result[counter]["qid"].slice(5, 8);
+          json_result[counter]["optid"] = json_result[counter]["optid"].slice(5, 10);
+          json_others["answers"].push(json_result[counter]);
+          counter = counter + 1;
+        }
+
+        res.send(json_others);
       }
     }
   )
@@ -327,9 +424,10 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
 // e) Get answers for specific questionnaire and specific question
 app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
-  const questionID = req.params.questionID;
+  const str = "QQ000"
+  const questionID = str + req.params.questionID;
   db.query(
-    "SELECT questionnaire_id,qid,A._session,optid \
+    "SELECT A._session,optid \
      FROM questionnaire_answer as Q \
      LEFT JOIN ans_consist_of as A \
      ON Q._session = A._session \
@@ -341,13 +439,38 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
       }
       else {
         console.log(result);
-        res.send(result);
+
+        jsonstring = JSON.stringify(result)
+        json_result =JSON.parse(jsonstring)
+
+        const others = {
+          questionnaireID: questionnaireID,
+          questionID: questionID
+        };
+
+        jsonstring_others = JSON.stringify(others)
+        json_others =JSON.parse(jsonstring_others)
+
+        json_others["questionID"] = json_others["questionID"].slice(5,8);
+        json_others["answers"] = [];
+
+        var counter = 0;
+        for(const j in json_result) {
+          json_result[counter]["optid"] = json_result[counter]["optid"].slice(5, 10);
+          json_others["answers"].push(json_result[counter]);
+          counter = counter + 1;
+        }
+
+        res.send(json_others);
       }
     }
   )
 });
 
 
+//
+// Below are the endpoints created for frontend usage
+//
 // Get all the questionnaires available
 app.get('/intelliq_api/questionnaires', function(req, res, next) {
   const id = req.body.id;
@@ -408,6 +531,52 @@ app.get('/intelliq_api/admin/:questionnaireID', function(req, res, next) {
      FROM questionnaire_form \
      WHERE questionnaire_id = ?", 
       [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get questions of a specific questionnaire
+app.get('/intelliq_api/admin/questionnaire/:questionnaireID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  db.query(
+    "SELECT distinct Q.qid, qtext, required, qtype \
+     FROM question as Q \
+     LEFT JOIN form_opt_and_questions as F \
+     ON Q.qid = F.qid \
+     WHERE questionnaire_id = ?", 
+      [questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  )
+});
+
+// Get options of specific question for specific questionnaire
+app.get('/intelliq_api/admin/question/:questionnaireID/:questionID', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaireID;
+  const qid = req.params.questionID;
+  console.log(qid)
+  db.query(
+    "SELECT * \
+     FROM _options \
+     WHERE optid in ( SELECT optid \
+                   FROM form_opt_and_questions \
+                   WHERE questionnaire_id = ? and qid = ?)", 
+      [questionnaire_id,qid], (err, result) => {
       if(err) {
         console.log(err)
         res.send({err: err})
