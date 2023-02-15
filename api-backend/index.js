@@ -29,7 +29,80 @@ db.connect(err => {
 
 module.exports = { db };
 
-// for file upload
+
+app.post('/intelliq_api/login', function(req, res, next) {
+  const email = req.body.username;
+  const password = req.body.password;
+
+  db.query(
+    "SELECT * FROM member WHERE email = ? AND password = ?", [email,password], (err, result) => {
+      if(err) {
+        res.send({err: err})
+      }
+      if(result.length>0) {
+        res.send(result);
+      } else {
+        res.send({ message: "Wrong username/password combination!"})
+      }
+    }
+  )
+});
+
+// Admin Endpoints
+// 1. healthcheck
+app.get('/intelliq_api/admin/healthcheck', function(req, res, next) {
+  const format = req.query.format;
+
+  db.ping((err) => {
+    if(err) {
+      console.log('{"status":"failed", "dbconnection": ["localhost","root","softeng_mysql","intelliq22","true"]}');
+      if(format==='json' || format===undefined) {
+        res.json([
+          {
+            "status":"failed", 
+            "dbconnection": [
+              'localhost',
+              'root',
+              'softeng_mysql',
+              'intelliq22',
+              'true'
+            ]
+          }
+        ])
+      }      
+    } else {
+      json_obj = [
+          {
+            "status":"OK", 
+            "dbconnection": [
+              'localhost',
+              'root',
+              'softeng_mysql',
+              'intelliq22',
+              'true'
+            ]
+          }
+        ]
+      if(format==='csv'){
+        const values = json_obj.map(obj => Object.values(obj));
+        const csvString = values.map(row => row.join(',')).join('\n');
+        const csvresult = 'status, dbconnection' + '\n' + csvString;
+        console.log(csvresult)
+        
+        res.status(200).send(csvresult);
+      }
+      else if(format==='json' || format===undefined) {
+        console.log('{"status":"OK", "dbconnection": ["localhost","root","softeng_mysql","intelliq22","true"]}');
+        res.status(200).send(json_obj[0])
+      } else {
+        // Invalid format parameter
+        res.status(400).send('Invalid format parameter');
+      } 
+    }
+  })
+});
+
+// 2. for questionnaire upload
 app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
   const filename =  Date.now() + '-' + req.files.file.name;
   const md5 = req.files.file.md5;
@@ -42,20 +115,22 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
       const readableStream = fs.createReadStream("./public/"+saveAs.toString());
       readableStream.on('data', (chunk) => {
         str = chunk.toString();
-        console.log(str);
         json_data = JSON.parse(str);
         var q_id = json_data["questionnaireID"];
         var q_title = json_data["questionnaireTitle"];
         var member_id = req.body.member_id;
         //console.log(json_data["questions"][0]["qID"]);
+
         var keywords = "";
         for(const i in json_data["keywords"]) {
           keywords +=  json_data["keywords"][i]+", ";
         }
+
         keywords = keywords.slice(0, -2);
         db.query(
           "INSERT INTO questionnaire_form VALUES (?,?,?,?)", [q_id,q_title,keywords,member_id], (err, result) => {
             if(err) {
+              res.send(400, err);
               console.log(err);
             } else {
               console.log(result);
@@ -64,6 +139,7 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
                   "INSERT INTO keyword VALUES (?,?)", [json_data["keywords"][i],q_id], (err1, result1) => {
                     if(err1) {
                       console.log(err1);
+                      res.send(400, err1);
                     } else console.log(result1);
                   }
                 )
@@ -78,6 +154,7 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
                   "INSERT INTO question VALUES (?,?,?,?)", [question_id,q_text,required,type], (err1, result1) => {
                     if(err1) {
                       console.log(err1);
+                      res.send(400, err1);
                     } else {
                       console.log(result1);
                       for(const j in json_data["questions"][i]["options"]) {
@@ -90,6 +167,7 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
                           "INSERT INTO _options VALUES (?,?,?)", [optID,opttxt,nextqID], (err2, result2) => {
                             if(err2) {
                               console.log(err2);
+                              res.send(400, err2);
                             } else console.log(result2);
                           }
                         )
@@ -97,7 +175,11 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
                           "INSERT INTO form_opt_and_questions VALUES (?,?,?)", [q_id,question_id,optID], (err2, result2) => {
                             if(err2) {
                               console.log(err2);
-                            } else console.log(question_id," ",result2);
+                              res.send(400, err2);
+                            } else {
+                              console.log(question_id," ",result2);
+                            }
+                            res.end("200");
                           }
                         )
                       }
@@ -113,42 +195,9 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
       
     }
   });
-  //console.log(req.files);
 });
 
-app.get('/intelliq_api/admin/healthcheck', function(req, res, next) {
-  db.ping((err) => {
-    if(err) {
-      console.log('{"status":"failed", "dbconnection": ["localhost","root","softeng_mysql","intelliq22","true"]}');
-      return res.json([
-        {
-          "status":"failed", 
-          "dbconnection": [
-            'localhost',
-            'root',
-            'softeng_mysql',
-            'intelliq22',
-            'true'
-          ]
-        }
-      ])
-    }
-    console.log('{"status":"OK", "dbconnection": ["localhost","root","softeng_mysql","intelliq22","true"]}');
-    res.json([
-      {
-        "status":"OK", 
-        "dbconnection": [
-          'localhost',
-          'root',
-          'softeng_mysql',
-          'intelliq22',
-          'true'
-        ]
-      }
-    ])
-  })
-});
-
+// 3. reset everything
 app.get('/intelliq_api/admin/resetall', function(req, res, next) {
   db.ping((err) => {
     if(err) {
@@ -169,37 +218,87 @@ app.get('/intelliq_api/admin/resetall', function(req, res, next) {
   })
 });
 
-app.post('/intelliq_api/login', function(req, res, next) {
-  const email = req.body.username;
-  const password = req.body.password;
-
+// 4. Reset all answers of a questionaire
+app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
   db.query(
-    "SELECT * FROM member WHERE email = ? AND password = ?", [email,password], (err, result) => {
+    "DELETE FROM ans_consist_of \
+     WHERE _session IN ( \
+     SELECT _session FROM questionnaire_answer \
+     WHERE questionnaire_id = ?",
+     [questionnaireID], (err, result) => {
       if(err) {
-        res.send({err: err})
+        console.log('{"status":"failed", "reason": '+ err +'}');
+        return res.json([
+        {
+          "status":"failed", 
+          "reason": err
+        }
+        ])     
       }
-      if(result.length>0) {
-        res.send(result);
-      } else {
-        res.send({ message: "Wrong username/password combination!"})
-      }
-    }
+      else {
+        db.query(
+          "DELETE FROM questionnaire_answer \
+           WHERE questionnaire_id = ?"
+          [questionnaireID], (err, result) => {
+                  if(err) {
+                    console.log('{"status":"failed", "reason": '+ err +'}');
+                    return res.json([
+                      {
+                        "status":"failed", 
+                        "reason": err
+                      }
+                    ])
+                  }
+                  console.log('{"status":"OK"}');
+                  res.json([
+                    {
+                      "status":"OK", 
+                    }
+                  ])
+                  }
+            )
+          }
+        }
   )
 });
 
+// 5. Insert or update user
+
+
+// 6. view a user's data
 app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
-  const id = req.params.username;
+  const email = req.params.username;
+  const format = req.query.format;
+
   db.query(
-    "SELECT * FROM member WHERE First_Name = ?", [id], (err, result) => {
+    "SELECT * FROM member WHERE email = ?", [email], (err, result) => {
       if(err) {
         console.log(err)
       }
-      csv.stringify(result, (err, output) => {
-        res.set('Content-Type', 'text/csv');
-        res.send(output);
-      });
-      //res.send(result);
-      console.log(result);
+      
+      jsonstring = JSON.stringify(result)
+      json_result =JSON.parse(jsonstring)
+
+      if(format==='csv') {
+        // Define the CSV header and columns
+        const csvHeader = 'member id, mstatus, First Name, Last_Name, email, password, Gender, Date of Birth';
+        const values = json_result.map(obj => Object.values(obj));
+        console.log(values)
+        // Convert the list of values to a comma-separated string
+        const csvString = values.map(row => row.join(',')).join('\n');
+        const csv_result = csvHeader + '\n' + csvString;
+        console.log(csv_result)
+        
+        res.status(200).send(csv_result);
+      } else if(format==='json' || format===undefined) {
+        json_result = json_result[0];
+        res.send(json_result);
+        console.log(json_result);
+      } else {
+        // Invalid format parameter
+        res.status(400).send('Invalid format parameter');
+      }    
     }
   )
 });
@@ -209,6 +308,8 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
 // a) get all questions for specific questionnaire
 app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
+  const format = req.query.format;
+
   db.query(
     "SELECT * \
      FROM question \
@@ -251,9 +352,6 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
                     jsonstring2 = JSON.stringify(result2)
                     json_keywords =JSON.parse(jsonstring2)
 
-                    console.log(json_questions);
-                    console.log(json_everything);
-
                     json_everything[0]["keywords"] = [];
                     var counter = 0;
                     for(const j in json_keywords) {
@@ -261,6 +359,7 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
                       counter = counter + 1;
                     }
 
+                    const values_csv = json_everything.map(obj => Object.values(obj)); // help for csv
                     json_everything[0]["questions"] = [];
                     var counter = 0;
                     for(const j in json_questions) {
@@ -269,9 +368,30 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
                       counter = counter + 1;
                     }
     
-                    final = json_everything[0];
-                    console.log(final);
-                    res.send(final);
+                    if(format==='csv') {
+                      const csvHeader1 = 'questionnaire_id, questionnaire_title, keywords';
+                      const csvHeader2 = 'qid, qtext, required, qtype';
+
+                      console.log(values_csv)
+                      // Convert the list of values to a comma-separated string
+                      const csvString = values_csv.map(row => row.join(',')).join('\n');
+
+                      const json_questions = json_everything[0]["questions"];
+                      console.log(json_questions)
+                      const values = json_questions.map(obj => Object.values(obj)); 
+                      const csvString_questions = values.map(row => row.join(',')).join('\n');
+                      const csv_result = csvHeader1 + '\n' + csvString + '\n' + csvHeader2 + '\n' + csvString_questions;
+                      console.log(csv_result)
+                      
+                      res.status(200).send(csv_result);
+                    } else if(format==='json' || format===undefined) {
+                      final = json_everything[0];
+                      console.log(final);
+                      res.send(final);
+                    } else {
+                      // Invalid format parameter
+                      res.status(400).send('Invalid format parameter');
+                    }     
                   }
                 }
               )
@@ -424,7 +544,7 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
 app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
   const questionID = questionnaireID + req.params.questionID;
-  
+
   db.query(
     "SELECT A._session,optid \
      FROM questionnaire_answer as Q \
@@ -692,51 +812,6 @@ app.get('/intelliq_api/doanswer2/:questionnaireID', function(req, res, next) {
 });
 
 
-
-//Reset all answers of a questionaire
-app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {
-  const questionnaireID = req.params.questionnaireID;
-  db.query(
-    "DELETE FROM ans_consist_of \
-     WHERE _session IN ( \
-     SELECT _session FROM questionnaire_answer \
-     WHERE questionnaire_id = ?",
-     [questionnaireID], (err, result) => {
-      if(err) {
-        console.log('{"status":"failed", "reason": '+ err +'}');
-        return res.json([
-        {
-          "status":"failed", 
-          "reason": err
-        }
-        ])     
-      }
-      else {
-        db.query(
-          "DELETE FROM questionnaire_answer \
-           WHERE questionnaire_id = ?"
-          [questionnaireID], (err, result) => {
-                  if(err) {
-                    console.log('{"status":"failed", "reason": '+ err +'}');
-                    return res.json([
-                      {
-                        "status":"failed", 
-                        "reason": err
-                      }
-                    ])
-                  }
-                  console.log('{"status":"OK"}');
-                  res.json([
-                    {
-                      "status":"OK", 
-                    }
-                  ])
-                  }
-            )
-          }
-        }
-  )
-});
 /*
 
 "SELECT * \

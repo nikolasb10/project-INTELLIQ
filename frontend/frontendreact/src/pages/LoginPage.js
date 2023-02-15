@@ -8,9 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function LoginPage({user, setUser}) {
 
-
   const [error, setError] = useState("");
-  let navigate = useNavigate();
 
   const Login = details => {
     console.log(details);

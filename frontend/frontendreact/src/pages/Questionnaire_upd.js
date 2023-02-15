@@ -4,6 +4,8 @@ import '../css/AvailableQuest.css';
 import axios from 'axios'
 import { useForm } from "react-hook-form";
 import FormData from 'form-data'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Questionnaire_upd({user, setUser}){
   const [file, setFile] = useState({
@@ -24,17 +26,36 @@ function Questionnaire_upd({user, setUser}){
     const data = new FormData();
     data.append('file',file.selectedFile,file.selectedFile.name);
     console.log(data)
-    axios.post("http://localhost:9103/intelliq_api/admin/questionnaire_upd/",data,{member_id: user.member_id},{
-        onUploadProgress: (ProgressEvent) => {
-          setLoading({ Loading: (ProgressEvent.loaded / ProgressEvent.total) * 100});
-        }
-      })
+    axios.post("http://localhost:9103/intelliq_api/admin/questionnaire_upd/",data,{member_id: user.member_id})
       .then((response) => {
-                console.log('Upload Success');
+                console.log(response)
+                if(response.status=='200'){
+                  toast.success("Questionnaire Uploaded",{
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "dark",
+                    });
+                    console.log('Upload Success');
+                }            
             })
-            .catch((response) => {
-                console.log('Upload Error')
-            })
+            .catch(error => {
+              console.log(error.response);
+              toast.error(error.response.data.sqlMessage,{
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                });
+            });
     setFile({selectedFile: null});
   }
 
@@ -50,10 +71,10 @@ function Questionnaire_upd({user, setUser}){
       <div className="letters">
         <label> Select File </label>
         <input  id="file" type="file" name="file" onChange={onInputChange}/>
-        <span>{Math.round(loading.Loading)}%</span>
         <br/><br/>
         <button onClick={onUpload}>Upload</button>
       </div>
+      <ToastContainer />
     </div>
   )}
 }
