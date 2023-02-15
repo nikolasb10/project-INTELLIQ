@@ -286,8 +286,8 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
 // b) Get data of a specific question of a specific questionnaire 
 app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
-  const str = "QQ000"
-  const questionID = str + req.params.questionID; 
+  const questionID = questionnaire_id + req.params.questionID; 
+
   db.query(
     "SELECT * \
      FROM _options \
@@ -347,8 +347,7 @@ app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res
 // c) post option to question for specific questionnaire and session
 app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
-  const str = "QQ000"
-  const questionID = str + req.params.questionID;  
+  const questionID = questionnaire_id + req.params.questionID;  
   const session = req.params.session;
   const optid = req.params.optionID;
 
@@ -424,8 +423,8 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
 // e) Get answers for specific questionnaire and specific question
 app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
-  const str = "QQ000"
-  const questionID = str + req.params.questionID;
+  const questionID = questionnaireID + req.params.questionID;
+  
   db.query(
     "SELECT A._session,optid \
      FROM questionnaire_answer as Q \
