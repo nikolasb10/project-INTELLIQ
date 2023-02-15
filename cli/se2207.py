@@ -1,7 +1,10 @@
 import click
 import requests
 import json 
+import csv
 import os
+import sys
+import io
 
 
 logged_in = False
@@ -13,6 +16,7 @@ if os.path.exists("usr_details.json"):
     with open("usr_details.json", "r") as f:
         data = json.load(f)
         mstatus = int(data[0]["mstatus"])
+        member_id = data[0]["member_id"]
 
 
 if mstatus == 1:
@@ -41,15 +45,24 @@ def login(username,passw):
 
 
 
-#Health Check
+#Health Check (#)
 @cli.command()
-def healthcheck():
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def healthcheck(format):
     if logged_in:
         if (mstatus == 1):
-            endpoint = "http://localhost:9103/intelliq_api/admin/healthcheck" 
+            endpoint = "http://localhost:9103/intelliq_api/admin/healthcheck?format="+ format 
             response = requests.get(endpoint)
             if response.status_code == 200:
-                click.echo(response.json())
+                if format == 'csv':
+                    click.echo(response.text)
+                elif format == 'json' or format =='':
+                    # print JSON to terminal
+                    click.echo(response.json())
+                else:
+                    click.echo(response.text)
+            else:
+                click.echo("Request failed with response :",response)
         else:
             click.echo("You dont have administrative Privilleges")
     else:
@@ -64,15 +77,22 @@ def logout():
 
 
 @cli.command()
-def resetall():
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def resetall(format):
     if logged_in:
         if (mstatus == 1):
-            endpoint = "http://localhost:9103/intelliq_api/admin/resetall" 
+            endpoint = "http://localhost:9103/intelliq_api/admin/resetall?format="+ format
             response = requests.get(endpoint)
             if response.status_code == 200:
-                click.echo(response.json())
+                if format == 'csv':
+                    click.echo(response.text)
+                elif format == 'json' or format =='':
+                    # print JSON to terminal
+                    click.echo(response.json())
+                else:
+                    click.echo(response.text)
             else:
-                click.echo("Request failed")
+                click.echo("Request failed with response :",response)
         else:
             click.echo("You dont have administrative Privilleges")
     else:
@@ -86,14 +106,21 @@ def resetall():
 
 @cli.command()
 @click.option('--questionnaire_id', '-qid', prompt=False, help='The Questionnaire ID.')
-def questionnaire(questionnaire_id):
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def questionnaire(questionnaire_id,format):
     if logged_in:
-        endpoint = f"http://localhost:9103/intelliq_api/admin/questionnaire/{questionnaire_id}"
+        endpoint = f"http://localhost:9103/intelliq_api/admin/questionnaire/{questionnaire_id}?format="+ format
         response = requests.get(endpoint)
         if response.status_code == 200:
+            if format == 'csv':
+                click.echo(response.text)
+            elif format == 'json' or format =='':
+                # print JSON to terminal
                 click.echo(response.json())
+            else:
+                click.echo(response.text)
         else:
-            click.echo("Request failed")
+            click.echo("Request failed with response :",response)
 
 
 
@@ -106,12 +133,12 @@ def questionnaire_upd(source):
        
         path = '../api-backend/public/'+source
        
-        response = requests.post(endpoint, files={'file': open(path, 'rb')})
-
+        response = requests.post(endpoint,data ={'member_id': member_id} , files={'file': open(path, 'rb')})
         if response.status_code == 200:
+                
                 click.echo(response.json())
         else:
-            click.echo("Request failed")
+            click.echo("Request failed with response :",response)
 
 
 
@@ -126,7 +153,7 @@ def question(questionnaire_id, question_id):
         if response.status_code == 200:
                 click.echo(response.json())
         else:
-            click.echo("Request failed")
+           click.echo("Request failed with response :",response)
     else:
         click.echo("You have to login first.")
 
@@ -146,23 +173,25 @@ def doanswer(questionnaire_id,question_id,session_id,option_id):
         click.echo("You have to login first.")
 
 
-'''
+
+
+# Get session answers of a questionnaire
 @cli.command()
 @click.option('--questionnaire_id', '-qrid', prompt=False, help='The Questionnaire ID.')
-@click.option('--question_id', '-qnid', prompt=False, help='The Question ID.')
-def getsessionanswers(questionnaire_id,question_id)
+@click.option('--session_id', '-sid', prompt=False, help='The Question ID.')
+def getsessionanswers(questionnaire_id,session_id):
     if logged_in:
-        endpoint = f"http://localhost:3000/admin/question/{question_id}"
+        endpoint = f"http://localhost:9103/intelliq_api/getsessionanswers/{questionnaire_id}/{session_id}"
         response = requests.get(endpoint)
         if response.status_code == 200:
                 click.echo(response.json())
         else:
-            click.echo("Request failed")
+            click.echo("Request failed with response :",response)
     else:
         click.echo("You have to login first.")
 
-'''
 
+#The answers of a specific question
 @cli.command()
 @click.option('--questionnaire_id', '-qrid', prompt=False, help='The Questionnaire ID.')
 @click.option('--question_id', '-qnid', prompt=False, help='The Question ID.')
@@ -173,7 +202,7 @@ def getquestionanswers(questionnaire_id,question_id):
         if response.status_code == 200:
                 click.echo(response.json())
         else:
-            click.echo("Request failed")
+           click.echo("Request failed with response :",response)
     else:
         click.echo("You have to login first.")
 
@@ -187,9 +216,70 @@ def resetq(questionnaire_id):
         if response.status_code == 200:
                 click.echo(response.json())
         else:
-            click.echo("Request failed")
+           click.echo("Request failed with response :",response)
     else:
         click.echo("You have to login first.")
+
+#Add Admin main scope
+@click.group()
+@click.pass_context
+def admin(ctx):
+    if not ctx.invoked_subcommand:
+        click.echo('Please specify a subcommand for the admin command.')
+
+
+cli.add_command(admin)
+
+
+#Admin Functions / Subscopes
+
+#Admin usermod command
+@admin.command()
+@click.option('--username', '-u', required=True)
+@click.option('--passw', '-p', required=True)
+def usermod(username, passw):
+    if logged_in:
+        if mstatus:
+            endpoint = f"http://localhost:9103/intelliq_api/admin/usermod/{username}/{passw}"
+            response = requests.post(endpoint)
+            if response.status_code == 200:
+                    click.echo(response.json())
+            else:
+                click.echo("Request failed with response :",response)
+        else:
+             click.echo("You dont have administrative privileges.")
+    else:
+        click.echo("You have to login first.")
+
+
+
+
+#Add users command
+@admin.command()
+@click.option('--username', '-u', required=True)
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def users(username,format):
+    if logged_in:
+        if mstatus:
+            endpoint = f"http://localhost:9103/intelliq_api/admin/users/{username}?format="+ format
+            print(endpoint)
+            response = requests.get(endpoint)
+            if response.status_code == 200:
+                if format == 'csv':
+                    click.echo(response.text)
+                elif format == 'json' or format =='':
+                    # print JSON to terminal
+                    click.echo(response.json())
+                else:
+                    click.echo(response.text)
+            else:
+                click.echo("Request failed with response :",response)
+        else:
+             click.echo("You dont have administrative privileges.")
+    else:
+        click.echo("You have to login first.")
+
+
 
 
 if __name__ == '__main__':
