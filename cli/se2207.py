@@ -121,6 +121,8 @@ def questionnaire(questionnaire_id,format):
                 click.echo(response.text)
         else:
             click.echo("Request failed with response :",response)
+    else:
+        ("You have to login first.")
 
 
 
@@ -146,16 +148,23 @@ def questionnaire_upd(source):
 @cli.command()
 @click.option('--questionnaire_id', '-qrid', prompt=False, help='The Questionnaire ID.')
 @click.option('--question_id', '-qnid', prompt=False, help='The Question ID.')
-def question(questionnaire_id, question_id):
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def question(questionnaire_id, question_id,format):
     if logged_in:
-        endpoint = f"http://localhost:9103/intelliq_api/admin/question/{questionnaire_id}/{question_id}"
+        endpoint = f"http://localhost:9103/intelliq_api/admin/question/{questionnaire_id}/{question_id}?format="+ format
         response = requests.get(endpoint)
         if response.status_code == 200:
+            if format == 'csv':
+                click.echo(response.text)
+            elif format == 'json' or format =='':
+                # print JSON to terminal
                 click.echo(response.json())
+            else:
+                click.echo(response.text)
         else:
-           click.echo("Request failed with response :",response)
+            click.echo("Request failed with response :",response)
     else:
-        click.echo("You have to login first.")
+        ("You have to login first.")
 
 
 
@@ -179,32 +188,45 @@ def doanswer(questionnaire_id,question_id,session_id,option_id):
 @cli.command()
 @click.option('--questionnaire_id', '-qrid', prompt=False, help='The Questionnaire ID.')
 @click.option('--session_id', '-sid', prompt=False, help='The Question ID.')
-def getsessionanswers(questionnaire_id,session_id):
+@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
+def getsessionanswers(questionnaire_id,session_id,format):
     if logged_in:
-        endpoint = f"http://localhost:9103/intelliq_api/getsessionanswers/{questionnaire_id}/{session_id}"
+        endpoint = f"http://localhost:9103/intelliq_api/getsessionanswers/{questionnaire_id}/{session_id}?format="+ format
         response = requests.get(endpoint)
         if response.status_code == 200:
+            if format == 'csv':
+                click.echo(response.text)
+            elif format == 'json' or format =='':
+                # print JSON to terminal
                 click.echo(response.json())
+            else:
+                click.echo(response.text)
         else:
             click.echo("Request failed with response :",response)
     else:
-        click.echo("You have to login first.")
+        ("You have to login first.")
 
 
 #The answers of a specific question
 @cli.command()
 @click.option('--questionnaire_id', '-qrid', prompt=False, help='The Questionnaire ID.')
 @click.option('--question_id', '-qnid', prompt=False, help='The Question ID.')
-def getquestionanswers(questionnaire_id,question_id):
+def getquestionanswers(questionnaire_id,question_id,format):
     if logged_in:
-        endpoint = f"http://localhost:9103/intelliq_api/getquestionanswers/{questionnaire_id}/{question_id}"
+        endpoint = f"http://localhost:9103/intelliq_api/getquestionanswers/{questionnaire_id}/{question_id}?format="+ format
         response = requests.get(endpoint)
         if response.status_code == 200:
+            if format == 'csv':
+                click.echo(response.text)
+            elif format == 'json' or format =='':
+                # print JSON to terminal
                 click.echo(response.json())
+            else:
+                click.echo(response.text)
         else:
-           click.echo("Request failed with response :",response)
+            click.echo("Request failed with response :",response)
     else:
-        click.echo("You have to login first.")
+        ("You have to login first.")
 
 
 @cli.command()
