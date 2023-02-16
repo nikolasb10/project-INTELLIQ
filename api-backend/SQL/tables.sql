@@ -13,7 +13,7 @@ CREATE TABLE Member(
 
 CREATE TABLE question(
 	qid char(8),
-    qtext varchar(50),
+    qtext varchar(200),
     required char(5),
     qtype char(10),
     primary key (qid)
@@ -77,6 +77,4 @@ CREATE TABLE ans_consist_of (
     foreign key (optid) references _options(optid)
     );
 
-/* Changed length of qtext */
-ALTER TABLE `intelliq22`.`question` 
-CHANGE COLUMN `qtext` `qtext` VARCHAR(100) NULL DEFAULT NULL ;
+

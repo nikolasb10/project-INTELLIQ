@@ -119,7 +119,7 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
         var q_id = json_data["questionnaireID"];
         var q_title = json_data["questionnaireTitle"];
         var member_id = req.body.member_id;
-        //console.log(json_data["questions"][0]["qID"]);
+        console.log(member_id);
 
         var keywords = "";
         for(const i in json_data["keywords"]) {
@@ -191,8 +191,7 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
             } 
           }
         )
-      })
-      
+      })    
     }
   });
 });
@@ -284,16 +283,14 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
         // Define the CSV header and columns
         const csvHeader = 'member id, mstatus, First Name, Last_Name, email, password, Gender, Date of Birth';
         const values = json_result.map(obj => Object.values(obj));
-        console.log(values)
         // Convert the list of values to a comma-separated string
         const csvString = values.map(row => row.join(',')).join('\n');
         const csv_result = csvHeader + '\n' + csvString;
-        console.log(csv_result)
         
         res.status(200).send(csv_result);
       } else if(format==='json' || format===undefined) {
         json_result = json_result[0];
-        res.send(json_result);
+        res.status(200).send(json_result);
         console.log(json_result);
       } else {
         // Invalid format parameter
@@ -380,7 +377,7 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
                       console.log(json_questions)
                       const values = json_questions.map(obj => Object.values(obj)); 
                       const csvString_questions = values.map(row => row.join(',')).join('\n');
-                      const csv_result = csvHeader1 + '\n' + csvString + '\n' + csvHeader2 + '\n' + csvString_questions;
+                      const csv_result = csvHeader1 + '\n' + csvString + '\n' + '\n' + csvHeader2 + '\n' + csvString_questions;
                       console.log(csv_result)
                       
                       res.status(200).send(csv_result);
@@ -407,6 +404,7 @@ app.get('/intelliq_api/questionnaire/:questionnaireID', function(req, res, next)
 app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaire_id = req.params.questionnaireID;
   const questionID = questionnaire_id + req.params.questionID; 
+  const format = req.query.format;
 
   db.query(
     "SELECT * \
@@ -441,6 +439,8 @@ app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res
               console.log(json_options);
               console.log(json_everything);
 
+              const values_csv = json_everything.map(obj => Object.values(obj)); // help for csv
+
               json_everything[0]["options"] = [];
               var counter = 0;
               for(const j in json_options) {
@@ -450,12 +450,31 @@ app.get('/intelliq_api/question/:questionnaireID/:questionID', function(req, res
                 counter = counter + 1;
               }
               
-              final = json_everything[0];
+              if(format==='csv') {
+                const csvHeader1 = 'questionnaire_id, qID, qtext, required, type';
+                const csvHeader2 = 'optid, opttext, nextqID';
 
-              final["qid"] = final["qid"].slice(5,8);
+                console.log(values_csv)
+                // Convert the list of values to a comma-separated string
+                const csvString = values_csv.map(row => row.join(',')).join('\n');
 
-              console.log(final);
-              res.send(final);
+                const json_options = json_everything[0]["options"];
+                console.log(json_options)
+                const values = json_options.map(obj => Object.values(obj)); 
+                const csvString_options = values.map(row => row.join(',')).join('\n');
+                const csv_result = csvHeader1 + '\n' + csvString + '\n' + '\n' + csvHeader2 + '\n' + csvString_options;
+                console.log(csv_result)
+                
+                res.status(200).send(csv_result);
+              } else if(format==='json' || format===undefined) {
+                final = json_everything[0];
+                final["qid"] = final["qid"].slice(5,8);
+                console.log(final);
+                res.send(final);
+              } else {
+                // Invalid format parameter
+                res.status(400).send('Invalid format parameter');
+              }  
             }
           }
         )
@@ -469,20 +488,8 @@ app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID
   const questionnaire_id = req.params.questionnaireID;
   const questionID = questionnaire_id + req.params.questionID;  
   const session = req.params.session;
-  const optid = req.params.optionID;
+  const optid = questionnaire_id + req.params.optionID;
 
-  db.query(
-    "INSERT INTO questionnaire_answer VALUES (?,?)", 
-      [session,questionnaire_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
-      }
-    }
-  )
   db.query(
     "INSERT INTO ans_consist_of VALUES (?,?,?)", 
       [session,questionID,optid], (err, result) => {
@@ -501,6 +508,8 @@ app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID
 app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
   const session = req.params.session;
+  const format = req.query.format;
+
   db.query(
     "SELECT qid, optid \
      FROM ans_consist_of AS A \
@@ -534,7 +543,25 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
           counter = counter + 1;
         }
 
-        res.send(json_others);
+        if(format==='csv') {
+          const csvHeader1 = 'questionnaire_id, session';
+          const csvHeader2 = 'qID, ans';
+
+          const json_answers = json_others["answers"];
+          console.log(json_answers)
+          const values = json_answers.map(obj => Object.values(obj)); 
+          const csvString_answers = values.map(row => row.join(',')).join('\n');
+          const csv_result = csvHeader1 + '\n' + questionnaireID + ', ' + session + '\n' + '\n' + csvHeader2 + '\n' + csvString_answers;
+          console.log(csv_result)
+          
+          res.status(200).send(csv_result);
+        } else if(format==='json' || format===undefined) {
+          console.log(json_others);
+          res.send(json_others);
+        } else {
+          // Invalid format parameter
+          res.status(400).send('Invalid format parameter');
+        }
       }
     }
   )
@@ -544,9 +571,10 @@ app.get('/intelliq_api/getsessionanswers/:questionnaireID/:session', function(re
 app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', function(req, res, next) {
   const questionnaireID = req.params.questionnaireID;
   const questionID = questionnaireID + req.params.questionID;
+  const format = req.query.format;
 
   db.query(
-    "SELECT A._session,optid \
+    "SELECT optid,A._session \
      FROM questionnaire_answer as Q \
      LEFT JOIN ans_consist_of as A \
      ON Q._session = A._session \
@@ -580,7 +608,25 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
           counter = counter + 1;
         }
 
-        res.send(json_others);
+        if(format==='csv') {
+          const csvHeader1 = 'questionnaire_id, questionID';
+          const csvHeader2 = 'sessions, ans';
+
+          const json_answers = json_others["answers"];
+          console.log(json_answers)
+          const values = json_answers.map(obj => Object.values(obj)); 
+          const csvString_answers = values.map(row => row.join(',')).join('\n');
+          const csv_result = csvHeader1 + '\n' + questionnaireID + ', ' + questionID.slice(5,8) + '\n' + '\n' + csvHeader2 + '\n' + csvString_answers;
+          console.log(csv_result)
+          
+          res.status(200).send(csv_result);
+        } else if(format==='json' || format===undefined) {
+          console.log(json_others);
+          res.send(json_others);
+        } else {
+          // Invalid format parameter
+          res.status(400).send('Invalid format parameter');
+        }
       }
     }
   )
@@ -592,9 +638,8 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
 //
 // Get all the questionnaires available
 app.get('/intelliq_api/questionnaires', function(req, res, next) {
-  const id = req.body.id;
   db.query(
-    "SELECT * FROM questionnaire_form", [id], (err, result) => {
+    "SELECT * FROM questionnaire_form", (err, result) => {
       if(err) {
         res.send({err: err})
       }
@@ -806,6 +851,24 @@ app.get('/intelliq_api/doanswer2/:questionnaireID', function(req, res, next) {
       else {
         console.log(result[0]);
         res.json(result);
+      }
+    }
+  )
+});
+
+app.post('/intelliq_api/doanswer/:questionnaire_id/:session', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaire_id;
+  const session = req.params.session;
+
+  db.query(
+    "INSERT INTO questionnaire_answer VALUES (?,?)", 
+      [session,questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
       }
     }
   )

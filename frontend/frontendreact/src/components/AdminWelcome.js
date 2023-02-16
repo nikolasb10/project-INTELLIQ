@@ -12,8 +12,8 @@ function AdminWelcome({user}){
     axios.get("http://localhost:9103/intelliq_api/admin/healthcheck")
       .then((response) => {
         if(response){
-          console.log(response.data[0]);
-          toast.success("Database connection status: "+response.data[0].status,{
+          console.log(response.data.status);
+          toast.success("Database connection status: "+response.data.status,{
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -25,7 +25,7 @@ function AdminWelcome({user}){
             });
         } else {
           console.log(response.data[0]);
-          toast.error("Database connection status: "+response.data[0].status,{
+          toast.error("Database connection status: "+response.data.status,{
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -43,8 +43,8 @@ function AdminWelcome({user}){
     axios.get("http://localhost:9103/intelliq_api/admin/resetall")
       .then((response) => {
         if(response){
-          console.log(response.data[0]);
-          toast.success("Reset status: "+response.data[0].status,{
+          console.log(response.data);
+          toast.success("Reset status: "+response.data.status,{
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,

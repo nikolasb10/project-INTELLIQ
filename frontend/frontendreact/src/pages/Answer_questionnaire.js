@@ -42,17 +42,31 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
               setQuestions(response.data)
             })
         }
+        /*const postses = (e) => {
+            axios.get("http://localhost:9103/intelliq_api/admin/questionnaire/"+params.questionnaireID)
+            .then((response) => {
+              console.log(response.data);
+              setQuestions(response.data)
+            })
+        }*/
           getquestions();
           getoptions1();
-          setSession(makeid(4));
+          const ses = makeid(4);
+          setSession(ses);
           console.log(session);
+          axios.post("http://localhost:9103/intelliq_api/doanswer/"+params.questionnaireID+"/"+ses)
+            .then((response) => {
+              console.log(response);
+            }) 
         },[]);
 
-    const handleOptionClick = (optid) => {
-        const nextQuestion = currentQuestion + 1;
-        console.log(optid)
-        const getoptions = (nextQuestion) => {
-            axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+questions[nextQuestion]["qid"])
+    const handleOptionClick = (option) => {
+        const qid = questions[currentQuestion]["qid"].slice(5,8);
+        const optid = option.optid.slice(5,10);
+        console.log(option.optid)
+
+        const getoptions = (option) => {
+            axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+option.nextqid)
             .then((response) => {
                 setOptions(response.data)
               console.log(response.data);
@@ -60,17 +74,28 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
         }
 
         const submitoption = (nextQuestion) => {
-            axios.post("http://localhost:9103/intelliq_api/doanswer/"+params.questionnaireID+"/"+questions[currentQuestion]["qid"]+"/"+session+"/"+optid)
+            axios.post("http://localhost:9103/intelliq_api/doanswer/"+params.questionnaireID+"/"+qid+"/"+session+"/"+optid)
             .then((response) => {
               console.log(response);
             }) 
         }
         submitoption();
-        if (nextQuestion < questions.length) {
-            setCurrentQuestion(nextQuestion);
-            getoptions(nextQuestion);
-        } else {
+        var counter = 0;
+        var nextQuestion = 0;
+        for(const j in questions){
+            if(questions[counter]["qid"] == option.nextqid) nextQuestion = counter;
+            counter = counter + 1;
+        }
+        console.log(questions[nextQuestion]["qid"])
+        if (nextQuestion >= questions.length || option.nextqid=='-') {
+            /*setQuestionnairedata({
+                questionnaire_id: "", questionnaire_title: '', keywords: '', member_id: ''
+              });*/
             setFinish(true);
+            console.log(option.nextqid)
+        } else {
+            setCurrentQuestion(nextQuestion);
+            getoptions(option);
         }
     };
 
@@ -88,11 +113,11 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
             return (
                 <div><br/><br/><br/><br/>
                     <input type="text" name="name" placeholder="Email" onChange={handleChange}/><br/><br/><br/>
-                    <button1 onClick={() => handleOptionClick(option.optid)}>Next</button1>
+                    <button1 onClick={() => handleOptionClick(option)}>Next</button1>
                 </div>
             )}
         else return (
-        <div><button onClick={() => handleOptionClick(option.optid)}>{option.opttext}</button></div>
+        <div><button onClick={() => handleOptionClick(option)}>{option.opttext}</button></div>
         )
     }
     return (
@@ -103,9 +128,17 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
                 {finish ? (
                     <div className='finish'><br/>
                         Finished! <br/><br/>
-                        <Link to='/intelliq_api/questionnaires'>
-                            <button1>Exit</button1>
-                        </Link>
+                        {(user.email != "") ? 
+                        (
+                            <Link to='/intelliq_api/login'>
+                                <button1> Exit  </button1><br/><br/>
+                            </Link>                            
+                        ) : (
+                            <Link to='/intelliq_api'>
+                                <button1> Exit </button1>
+                            </Link>
+                        )
+                        }
                     </div>          
                 ) : (
                     <>

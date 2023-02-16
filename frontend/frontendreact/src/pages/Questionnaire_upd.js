@@ -25,8 +25,9 @@ function Questionnaire_upd({user, setUser}){
     e.preventDefault();
     const data = new FormData();
     data.append('file',file.selectedFile,file.selectedFile.name);
+    data.append('member_id',user.member_id);
     console.log(data)
-    axios.post("http://localhost:9103/intelliq_api/admin/questionnaire_upd/",data,{member_id: user.member_id})
+    axios.post("http://localhost:9103/intelliq_api/admin/questionnaire_upd/",data, { headers: {'Content-Type': 'multipart/form-data'} })
       .then((response) => {
                 console.log(response)
                 if(response.status=='200'){
