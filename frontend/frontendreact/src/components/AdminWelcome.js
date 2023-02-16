@@ -39,12 +39,15 @@ function AdminWelcome({user}){
       })
   }
 
-  const onResetall = (e) => {
-    axios.get("http://localhost:9103/intelliq_api/admin/resetall")
+  const onResetall = () => {
+    const confirmed = window.confirm('Are you sure you want to reset everything?');
+
+    if(confirmed){
+      axios.post("http://localhost:9103/intelliq_api/admin/resetall/",{member_id: user.member_id})
       .then((response) => {
-        if(response){
-          console.log(response.data);
-          toast.success("Reset status: "+response.data.status,{
+        console.log(response);
+        if(response.status=='200'){
+          toast.success("Everything Deleted",{
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -54,20 +57,22 @@ function AdminWelcome({user}){
             progress: undefined,
             theme: "dark",
             });
-        } else {
-          console.log(response.data[0]);
-          toast.error("Reset status: "+response.data[0].status,{
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            });
-        }
-      })
+            console.log('Resetall success');
+        }    
+      }).catch(error => {
+        console.log(error.response);
+        toast.error(error.response.data.sqlMessage,{
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          });
+      });
+    } else return;
   }
 
   return (

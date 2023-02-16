@@ -196,36 +196,16 @@ app.post('/intelliq_api/admin/questionnaire_upd', (req, res) => {
   });
 });
 
-// 3. reset everything
-app.get('/intelliq_api/admin/resetall', function(req, res, next) {
-  db.ping((err) => {
-    if(err) {
-      console.log('{"status":"failed", "reason": '+ err +'}');
-      return res.json([
-        {
-          "status":"failed", 
-          "reason": err
-        }
-      ])
-    }
-    console.log('{"status":"OK"}');
-    res.json([
-      {
-        "status":"OK", 
-      }
-    ])
-  })
-});
-
-// 4. Reset all answers of a questionaire
-app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {
-  const questionnaireID = req.params.questionnaireID;
+// 3. reset everythinq (users and admin's questionnaires)
+app.post('/intelliq_api/admin/resetall', function(req, res, next) {
+  const member_id = req.body.member_id;
+  const format = req.query.format;
+ 
   db.query(
-    "DELETE FROM ans_consist_of \
-     WHERE _session IN ( \
-     SELECT _session FROM questionnaire_answer \
-     WHERE questionnaire_id = ?",
-     [questionnaireID], (err, result) => {
+    "DELETE FROM questionnaire_form \
+     WHERE member_id = ?; \
+     DELETE FROM member \
+     WHERE mstatus = 'u'",[member_id], (err, result) => {
       if(err) {
         console.log('{"status":"failed", "reason": '+ err +'}');
         return res.json([
@@ -236,34 +216,102 @@ app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next)
         ])     
       }
       else {
-        db.query(
-          "DELETE FROM questionnaire_answer \
-           WHERE questionnaire_id = ?"
-          [questionnaireID], (err, result) => {
-                  if(err) {
-                    console.log('{"status":"failed", "reason": '+ err +'}');
-                    return res.json([
-                      {
-                        "status":"failed", 
-                        "reason": err
-                      }
-                    ])
-                  }
-                  console.log('{"status":"OK"}');
-                  res.json([
-                    {
-                      "status":"OK", 
-                    }
-                  ])
-                  }
-            )
-          }
+        if(format==='csv') {
+          res.status(200).send("status"+"\n"+"OK");
+        } else if(format==='json' || format===undefined) {
+          res.status(200).json([
+            {
+              "status":"OK", 
+            }
+          ])
+        } else {
+          // Invalid format parameter
+          res.status(400).send('Invalid format parameter');
         }
+      }
+    }
+  )
+});
+
+// 4. Reset all answers of a questionaire
+app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const format = req.query.format;
+ 
+  db.query(
+    "DELETE FROM ans_consist_of \
+     WHERE _session IN (SELECT _session \
+                        FROM questionnaire_answer \
+                        WHERE questionnaire_id = ?); \
+     DELETE FROM questionnaire_answer \
+     WHERE questionnaire_id = ?",[questionnaireID,questionnaireID], (err, result) => {
+      if(err) {
+        console.log('{"status":"failed", "reason": '+ err +'}');
+        return res.json([
+        {
+          "status":"failed", 
+          "reason": err
+        }
+        ])     
+      }
+      else {
+        if(format==='csv') {
+          res.status(200).send("status"+"\n"+"OK");
+        } else if(format==='json' || format===undefined) {
+          res.status(200).json([
+            {
+              "status":"OK", 
+            }
+          ])
+        } else {
+          // Invalid format parameter
+          res.status(400).send('Invalid format parameter');
+        }
+      }
+    }
   )
 });
 
 // 5. Insert or update user
+app.get('/intelliq_api/admin/usermod/:username/:password', function(req, res, next) {
+  const email = req.params.username;
+  const password = req.params.password;
+  const format = req.query.format;
+  const mstatus = req.body.mstatus;
+  const First_Name = req.body.First_Name;
+  const Last_Name = req.body.Last_Name;
+  const Gender = req.body.Gender;
+  const Date_of_Birth = req.body.Date_of_Birth;
 
+  db.query(
+    "SELECT * FROM member WHERE email = ?", [email], (err, result) => {
+      if(err) {
+        console.log(err)
+      }
+      
+      jsonstring = JSON.stringify(result)
+      json_result =JSON.parse(jsonstring)
+
+      if(format==='csv') {
+        // Define the CSV header and columns
+        const csvHeader = 'member id, mstatus, First Name, Last_Name, email, password, Gender, Date of Birth';
+        const values = json_result.map(obj => Object.values(obj));
+        // Convert the list of values to a comma-separated string
+        const csvString = values.map(row => row.join(',')).join('\n');
+        const csv_result = csvHeader + '\n' + csvString;
+        
+        res.status(200).send(csv_result);
+      } else if(format==='json' || format===undefined) {
+        json_result = json_result[0];
+        res.status(200).send(json_result);
+        console.log(json_result);
+      } else {
+        // Invalid format parameter
+        res.status(400).send('Invalid format parameter');
+      }    
+    }
+  )
+});
 
 // 6. view a user's data
 app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
@@ -275,7 +323,8 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
       if(err) {
         console.log(err)
       }
-      
+      if(result.length==0) res.status(402)
+
       jsonstring = JSON.stringify(result)
       json_result =JSON.parse(jsonstring)
 
