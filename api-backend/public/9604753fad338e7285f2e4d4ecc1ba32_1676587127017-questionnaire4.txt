@@ -57,13 +57,26 @@
     {
     "optID": "P02A1",
     "opttxt": ":Άντρας",
-    "nextqID": "Q01"
+    "nextqID": "P03"
     },
     {
     "optID": "P02A2",
     "opttxt": "Γυναίκα",
-    "nextqID": "Q01"
+    "nextqID": "P03"
     }
+    ]
+    },
+    {
+    "qID": "P03",
+    "qtext": "Ποιος είναι ο τόπος διαμονής σας;",
+    "required": "TRUE",
+    "type": "profile",
+    "options": [
+        {
+        "optID": "P03TXT",
+        "opttxt": "<open string>",
+        "nextqID": "Q01"
+        }
     ]
     },
     {
@@ -116,7 +129,7 @@
         },
        {
         "optID": "Q03A2",
-        "opttxt":"Ωκεανία",
+        "opttxt":"Αυστραλία",
         "nextqID": "Q04"
         }
         ,
@@ -161,17 +174,17 @@
         {
         "optID": "Q05A1",
         "opttxt": "Δωδεκάνησα",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         },
         {
         "optID": "Q05A2",
         "opttxt": "Κυκλάδες",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         },
         {
         "optID": "Q05A3",
         "opttxt": "Επτάνησα",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         }
         ]
         },
@@ -184,12 +197,12 @@
         {  
         "optID": "Q06A1",
         "opttxt": "Σε ορεινή περιοχή",
-        "nextqID": "Q08"
+        "nextqID": "Q07"
         },
         {
         "optID": "Q06A2",
         "opttxt": "Σε παραθαλάσσια περιοχή",
-        "nextqID": "Q07"
+        "nextqID": "Q08"
         }
         ]
         },

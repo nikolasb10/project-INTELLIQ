@@ -1,0 +1,459 @@
+{
+	"info": {
+		"_postman_id": "90cf3436-6e4a-47ef-ae29-fcac7e117a4c",
+		"name": "Intelliq22 RESTApi Documentation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21283237"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "nkbenetos@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Healthcheck: Επιβεβαίωση συνδεσιμότητας μεταξύ βάσης δεδομένων και χρήστη",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/healthcheck",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ανέβασμα αρχείου JSON με δεδομένα νέου ερωτηματολογίου",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "",
+							"description": "Αρχείο προς ανέβασμα",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/questionnaire_upd",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"questionnaire_upd"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resetall: Αρχικοποίηση όλων των δεδομένων του συστήματος",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/resetall",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"resetall"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resetq: Διαγραφή όλων των απαντήσεων του ερωτηματολογίου",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/resetq/:questionnaireID",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"resetq",
+						":questionnaireID"
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Usermod: Προσθήκη νέου χρήστη",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "member_id",
+							"value": "00002",
+							"type": "text"
+						},
+						{
+							"key": "mstatus",
+							"value": "u",
+							"type": "text"
+						},
+						{
+							"key": "First_Name",
+							"value": "vev",
+							"type": "text"
+						},
+						{
+							"key": "Last_Name",
+							"value": "vdfv",
+							"type": "text"
+						},
+						{
+							"key": "Gender",
+							"value": "vvs",
+							"type": "text"
+						},
+						{
+							"key": "Date_of_Birth",
+							"value": "vdfvfd",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/usermod/:username/:password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"usermod",
+						":username",
+						":password"
+					],
+					"variable": [
+						{
+							"key": "username",
+							"value": "vefv"
+						},
+						{
+							"key": "password",
+							"value": "12"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ανάγνωση των στοιχείων ενός χρήστη",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/admin/users/:username",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"admin",
+						"users",
+						":username"
+					],
+					"variable": [
+						{
+							"key": "username",
+							"value": "nkbenetos@gmail.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Στοιχεία και ερωτήσεις ερωτηματολογίου",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/questionnaire/:questionnaireID",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"questionnaire",
+						":questionnaireID"
+					],
+					"query": [
+						{
+							"key": "format",
+							"value": "csv",
+							"description": "csv or json",
+							"disabled": true
+						}
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": "QQ004"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Στοιχεία και επιλογές μιας ερώτησης",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/question/:questionnaireID/:questionID",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"question",
+						":questionnaireID",
+						":questionID"
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": "QQ004"
+						},
+						{
+							"key": "questionID",
+							"value": "Q03"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Session: Προσθήκη καινούργιας session στην βάση",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/doanswer/:questionnaireID/:session",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"doanswer",
+						":questionnaireID",
+						":session"
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": "QQ004"
+						},
+						{
+							"key": "session",
+							"value": "Ykxw"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Doanswer: απάντηση σε συγκεκριμένη ερώτηση ερωτηματολογόυ για συγκεκριμένη session",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"doanswer",
+						":questionnaireID",
+						":questionID",
+						":session",
+						":optionID"
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": "QQ004"
+						},
+						{
+							"key": "questionID",
+							"value": "Q03"
+						},
+						{
+							"key": "session",
+							"value": "Ykxw"
+						},
+						{
+							"key": "optionID",
+							"value": "Q03A4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Getsessionanswers: απαντήσεις για συγκεκριμένο ερωτηματολόγιο και συγκεκριμένη session",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/getsessionanswers/:questionnaire_id/:session",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"getsessionanswers",
+						":questionnaire_id",
+						":session"
+					],
+					"variable": [
+						{
+							"key": "questionnaire_id",
+							"value": "QQ004"
+						},
+						{
+							"key": "session",
+							"value": "Ykxw"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Getquestionanswers: απαντήσεις για συγκεκριμένη ερώτηση",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9103/intelliq_api/getquestionanswers/:questionnaireID/:questionID",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9103",
+					"path": [
+						"intelliq_api",
+						"getquestionanswers",
+						":questionnaireID",
+						":questionID"
+					],
+					"variable": [
+						{
+							"key": "questionnaireID",
+							"value": "QQ004"
+						},
+						{
+							"key": "questionID",
+							"value": "Q03"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

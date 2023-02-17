@@ -30,20 +30,33 @@ db.connect(err => {
 module.exports = { db };
 
 
-app.post('/intelliq_api/login', function(req, res, next) {
+app.get('/intelliq_api/login', function(req, res, next) {
   const email = req.body.username;
   const password = req.body.password;
 
   db.query(
     "SELECT * FROM member WHERE email = ? AND password = ?", [email,password], (err, result) => {
       if(err) {
-        res.send({err: err})
+        res.status(400).send({err: err})
       }
       if(result.length>0) {
-        res.send(result);
+        res.status(200).send(result);
       } else {
-        res.send({ message: "Wrong username/password combination!"})
+        res.status(400).send({ message: "Wrong username/password combination!"})
       }
+    }
+  )
+});
+
+app.post('/intelliq_api/logout', function(req, res, next) {
+  const email = req.body.username;
+
+  db.query(
+    "SELECT * FROM member WHERE email = ?", [email], (err, result) => {
+      if(err) {
+        res.status(400).send({err: err})
+      }
+        res.status(200).send("User logged out");
     }
   )
 });
@@ -273,10 +286,11 @@ app.post('/intelliq_api/admin/resetq/:questionnaireID', function(req, res, next)
 });
 
 // 5. Insert or update user
-app.get('/intelliq_api/admin/usermod/:username/:password', function(req, res, next) {
+app.post('/intelliq_api/admin/usermod/:username/:password', function(req, res, next) {
   const email = req.params.username;
   const password = req.params.password;
   const format = req.query.format;
+  const member_id = req.body.member_id;
   const mstatus = req.body.mstatus;
   const First_Name = req.body.First_Name;
   const Last_Name = req.body.Last_Name;
@@ -284,31 +298,17 @@ app.get('/intelliq_api/admin/usermod/:username/:password', function(req, res, ne
   const Date_of_Birth = req.body.Date_of_Birth;
 
   db.query(
-    "SELECT * FROM member WHERE email = ?", [email], (err, result) => {
+    "INSERT INTO intelliq22.member ('member_id','mstatus','First_Name','Last_Name','email','password','Gender','Date_of_Birth') VALUES (?,?,?,?,?,?,?,?)", [member_id,mstatus,First_Name,Last_Name,email,password,Gender,Date_of_Birth], (err, result) => {
       if(err) {
+        res.status(400).send(err)
         console.log(err)
       }
-      
-      jsonstring = JSON.stringify(result)
-      json_result =JSON.parse(jsonstring)
+      else{
+        /*if(result.length==0) {
 
-      if(format==='csv') {
-        // Define the CSV header and columns
-        const csvHeader = 'member id, mstatus, First Name, Last_Name, email, password, Gender, Date of Birth';
-        const values = json_result.map(obj => Object.values(obj));
-        // Convert the list of values to a comma-separated string
-        const csvString = values.map(row => row.join(',')).join('\n');
-        const csv_result = csvHeader + '\n' + csvString;
-        
-        res.status(200).send(csv_result);
-      } else if(format==='json' || format===undefined) {
-        json_result = json_result[0];
-        res.status(200).send(json_result);
-        console.log(json_result);
-      } else {
-        // Invalid format parameter
-        res.status(400).send('Invalid format parameter');
-      }    
+        }*/
+        res.status(200)("User Inserted")
+      }
     }
   )
 });
@@ -323,7 +323,8 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
       if(err) {
         console.log(err)
       }
-      if(result.length==0) res.status(402)
+
+      if(result.length==0) res.status(402).send("No data were found")
 
       jsonstring = JSON.stringify(result)
       json_result =JSON.parse(jsonstring)
@@ -342,7 +343,6 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
         res.status(200).send(json_result);
         console.log(json_result);
       } else {
-        // Invalid format parameter
         res.status(400).send('Invalid format parameter');
       }    
     }
@@ -548,6 +548,7 @@ app.post('/intelliq_api/doanswer/:questionnaireID/:questionID/:session/:optionID
       }
       else {
         console.log(result);
+        res.status(200).send("Answer inserted")
       }
     }
   )
@@ -686,6 +687,26 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
 // Below are the endpoints created for frontend usage
 //
 // Get all the questionnaires available
+
+app.post('/intelliq_api/doanswer/:questionnaire_id/:session', function(req, res, next) {
+  const questionnaire_id = req.params.questionnaire_id;
+  const session = req.params.session;
+
+  db.query(
+    "INSERT INTO questionnaire_answer VALUES (?,?)", 
+      [session,questionnaire_id], (err, result) => {
+      if(err) {
+        console.log(err)
+        res.send({err: err})
+      }
+      else {
+        console.log(result);
+        res.status(200).send("Session added");
+      }
+    }
+  )
+});
+
 app.get('/intelliq_api/questionnaires', function(req, res, next) {
   db.query(
     "SELECT * FROM questionnaire_form", (err, result) => {
@@ -791,12 +812,40 @@ app.get('/intelliq_api/admin/question/:questionnaireID/:questionID', function(re
                    WHERE questionnaire_id = ? and qid = ?)", 
       [questionnaire_id,qid], (err, result) => {
       if(err) {
-        console.log(err)
+        console.log(err,"Error")
         res.send({err: err})
       }
       else {
-        console.log(result);
-        res.send(result);
+        console.log(result.length)
+        if(result.length==undefined){
+          db.end((err) => {
+            if (err) {
+              console.log('Error closing the connection:', err);
+            } else {
+              console.log('Connection closed successfully.');
+              
+              // To start the connection again, you can create a new connection object
+              const db = mysql.createConnection({
+                host:'localhost',
+                user: 'root',
+                password: 'softeng_mysql',
+                database: 'intelliq22',
+                multipleStatements: true
+              });
+              
+              db.connect((err) => {
+                if (err) {
+                  console.log('Error connecting to database:', err);
+                } else {
+                  console.log('Connected to database.');
+                }
+              });
+            }
+          });   
+        } else {
+          console.log(result);
+          res.send(result);
+        }
       }
     }
   )
@@ -900,24 +949,6 @@ app.get('/intelliq_api/doanswer2/:questionnaireID', function(req, res, next) {
       else {
         console.log(result[0]);
         res.json(result);
-      }
-    }
-  )
-});
-
-app.post('/intelliq_api/doanswer/:questionnaire_id/:session', function(req, res, next) {
-  const questionnaire_id = req.params.questionnaire_id;
-  const session = req.params.session;
-
-  db.query(
-    "INSERT INTO questionnaire_answer VALUES (?,?)", 
-      [session,questionnaire_id], (err, result) => {
-      if(err) {
-        console.log(err)
-        res.send({err: err})
-      }
-      else {
-        console.log(result);
       }
     }
   )

@@ -116,7 +116,7 @@
         },
        {
         "optID": "Q03A2",
-        "opttxt":"Ωκεανία",
+        "opttxt":"Αυστραλία",
         "nextqID": "Q04"
         }
         ,
@@ -161,17 +161,17 @@
         {
         "optID": "Q05A1",
         "opttxt": "Δωδεκάνησα",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         },
         {
         "optID": "Q05A2",
         "opttxt": "Κυκλάδες",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         },
         {
         "optID": "Q05A3",
         "opttxt": "Επτάνησα",
-        "nextqID": "Q06"
+        "nextqID": "Q07"
         }
         ]
         },

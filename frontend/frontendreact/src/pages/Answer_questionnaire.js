@@ -66,6 +66,7 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
         console.log(option.optid)
 
         const getoptions = (option) => {
+            console.log(option.nextqid)
             axios.get("http://localhost:9103/intelliq_api/admin/question/"+params.questionnaireID+"/"+option.nextqid)
             .then((response) => {
                 setOptions(response.data)
@@ -79,7 +80,6 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
               console.log(response);
             }) 
         }
-        submitoption();
         var counter = 0;
         var nextQuestion = 0;
         for(const j in questions){
@@ -87,14 +87,16 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
             counter = counter + 1;
         }
         console.log(questions[nextQuestion]["qid"])
-        if (nextQuestion >= questions.length || option.nextqid=='-') {
+        if (nextQuestion >= questions.length || option.nextqid===params.questionnaireID+'-') {
             /*setQuestionnairedata({
                 questionnaire_id: "", questionnaire_title: '', keywords: '', member_id: ''
               });*/
             setFinish(true);
             console.log(option.nextqid)
         } else {
+            submitoption(nextQuestion);
             setCurrentQuestion(nextQuestion);
+            console.log(option.nextqid)
             getoptions(option);
         }
     };
@@ -112,7 +114,7 @@ function Answer_questionnaire({ user, questionnairedata, setQuestionnairedata })
         if(option.opttext=="<open string>") {
             return (
                 <div><br/><br/><br/><br/>
-                    <input type="text" name="name" placeholder="Email" onChange={handleChange}/><br/><br/><br/>
+                    <input type="text" name="name" onChange={handleChange}/><br/><br/><br/>
                     <button1 onClick={() => handleOptionClick(option)}>Next</button1>
                 </div>
             )}
