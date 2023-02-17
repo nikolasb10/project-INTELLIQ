@@ -2,7 +2,6 @@
 
 /* Delete Questionnaire */
 
-DROP TRIGGER questionnaire_delete
 delimiter //
 CREATE TRIGGER questionnaire_delete 
 	BEFORE DELETE ON questionnaire_form
