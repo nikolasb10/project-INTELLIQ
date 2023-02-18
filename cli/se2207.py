@@ -1,9 +1,10 @@
+import sys
+sys.path.append('./modules')
 import click
 import requests
 import json 
 import csv
 import os
-import sys
 import io
 
 
@@ -15,7 +16,7 @@ mmember_id = None
 if os.path.exists("usr_details.json"):
     with open("usr_details.json", "r") as f:
         data = json.load(f)
-        mstatuss = int(data[0]["mstatus"])
+        mstatuss = (data[0]["mstatus"])
         mmember_id = data[0]["member_id"]
 
 
@@ -37,7 +38,7 @@ def login(username,passw):
     global logged_in
     payload = {'username': username, 'password': passw}
     endpoint = "http://localhost:9103/intelliq_api/login"
-    response = requests.get(endpoint, json=payload)
+    response = requests.post(endpoint, json=payload)
     if isinstance(response.json(), list):
         print("Logged In!")
         with open('usr_details.json', 'w') as f:
@@ -53,7 +54,7 @@ def login(username,passw):
 @click.option('--format', '-f', prompt=False, help='CSV or JSON.')
 def healthcheck(format):
     if logged_in:
-        if (mstatuss == 1):
+        if (mstatuss == 'a'):
             endpoint = "http://localhost:9103/intelliq_api/admin/healthcheck?format="+ format 
             response = requests.get(endpoint)
             if response.status_code == 200:
@@ -89,7 +90,7 @@ def logout():
 @click.option('--format', '-f', prompt=False, help='CSV or JSON.')
 def resetall(format):
     if logged_in:
-        if (mstatuss == 1):
+        if (mstatuss == 'a'):
 
             endpoint = "http://localhost:9103/intelliq_api/admin/resetall?format="+ format
             response = requests.post(endpoint,data ={'member_id': mmember_id})
@@ -308,10 +309,7 @@ cli.add_command(admin)
 #@click.option('--format', '-f', prompt=False, help='CSV or JSON.')
 def usermod(username, passw,member_id,mstatus,first_name,last_name,gender,date_of_birth):
     if logged_in:
-        if mstatuss:
-            if (member_id is None) or (mstatus is None) or(first_name is None) or(last_name is None) or(gender is None) or(date_of_birth is None):
-                click.echo("To add a user, input all the necessary parameters first")
-                sys.exit()
+        if (mstatuss == 'a'):
             dataa ={
                 'member_id': member_id,
                 'mstatus': mstatus,
@@ -340,7 +338,7 @@ def usermod(username, passw,member_id,mstatus,first_name,last_name,gender,date_o
 @click.option('--format', '-f', prompt=False, help='CSV or JSON.')
 def users(username,format):
     if logged_in:
-        if mstatuss:
+        if (mstatuss == 'a'):
             endpoint = f"http://localhost:9103/intelliq_api/admin/users/{username}?format="+ format
             response = requests.get(endpoint)
             if response.status_code == 200:
