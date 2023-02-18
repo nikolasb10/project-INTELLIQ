@@ -1,0 +1,38 @@
+1)
+#./se2207.py healthcheck --format csv
+#./se2207.py healthcheck --format json
+
+
+2)
+#./se2207 questionnaire --questionnaire_id QQ000 --format csv
+#./se2207 questionnaire --questionnaire_id QQ000 --format json
+
+3)
+#./se2207 doanswer --questionnaire_id QQ004 --question_id P01 --session_id KAPA --option_id P01A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id P02 --session_id KAPA --option_id P02A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q01 --session_id KAPA --option_id Q01A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q02 --session_id KAPA --option_id Q02A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q03 --session_id KAPA --option_id Q03A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q04 --session_id KAPA --option_id Q04A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q05 --session_id KAPA --option_id Q05A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q06 --session_id KAPA --option_id Q06A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q07 --session_id KAPA --option_id Q07A1
+#./se2207 doanswer --questionnaire_id QQ004 --question_id Q08 --session_id KAPA --option_id Q08A1
+
+
+4)
+#./se2207 getquestionanswers --questionnaire_id QQ004 --question_id Q01 --format csv
+#./se2207 getquestionanswers --questionnaire_id QQ004 --question_id Q01 --format json
+
+
+5)
+#./se2207 resetall --format csv
+#./se2207 resetall --format json
+
+6)
+#./se2207 questionnaireupd --source cli_test.txt
+
+
+7)
+#./se2207 questionnaire --questionnaire_id QQ004 --format csv
+#./se2207 questionnaire --questionnaire_id QQ004 --format json
