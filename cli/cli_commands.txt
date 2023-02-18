@@ -1,6 +1,9 @@
+0)./se2207 login --username <username> --passw <password>
+
+
 1)
-#./se2207.py healthcheck --format csv
-#./se2207.py healthcheck --format json
+#./se2207 healthcheck --format csv
+#./se2207 healthcheck --format json
 
 
 2)
