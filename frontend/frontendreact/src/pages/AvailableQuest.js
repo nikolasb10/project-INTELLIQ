@@ -22,14 +22,14 @@ function AvailableQuest({user, setUser}){
     },[]);
 
     const deleteq = (questionaire_id) => {
-      const confirmed = window.confirm('Are you sure you want to delete the answers to this questionnaire?');
+      const confirmed = window.confirm('Are you sure you want to delete this questionnaire?');
 
       if(confirmed){
-        axios.post("http://localhost:9103/intelliq_api/admin/resetq/"+questionaire_id)
+        axios.post("http://localhost:9103/intelliq_api/admin/deleteq/"+questionaire_id)
         .then((response) => {
           console.log(response);
           if(response.status=='200'){
-            toast.success("Questionnaire Answers Deleted",{
+            toast.success("Questionnaire Deleted",{
               position: "top-right",
               autoClose: 5000,
               hideProgressBar: false,
@@ -39,7 +39,7 @@ function AvailableQuest({user, setUser}){
               progress: undefined,
               theme: "dark",
               });
-              console.log('Resetq success');
+              console.log('Deleteq success');
           }    
         }).catch(error => {
           console.log(error.response);
