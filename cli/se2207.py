@@ -149,7 +149,7 @@ def questionnaireupd(source):
     if logged_in:
         endpoint = f"http://localhost:9103/intelliq_api/admin/questionnaire_upd"
        
-        path = '../api-backend/public/'+source
+        path = '../data/questionnaires/'+source
        
         response = requests.post(endpoint,data ={'member_id': mmember_id} , files={'file': open(path, 'rb')})
         if response.status_code == 200:    

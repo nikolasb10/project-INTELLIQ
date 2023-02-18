@@ -1,4 +1,4 @@
-0)./se2207 login --username <username> --passw <password>
+0)python se2207.py login --username nkbenetos@gmail.com --passw 123
 
 
 1)
@@ -7,8 +7,8 @@ python se2207.py healthcheck --format json
 
 
 2)
-python se2207.py questionnaire --questionnaire_id QQ000 --format csv
-python se2207.py questionnaire --questionnaire_id QQ000 --format json
+python se2207.py questionnaire --questionnaire_id QQ004 --format csv
+python se2207.py questionnaire --questionnaire_id QQ004 --format json
 
 3)
 python se2207.py doanswer --questionnaire_id QQ004 --question_id P01 --session_id KAPA --option_id P01A1
@@ -33,7 +33,7 @@ python se2207.py resetall --format csv
 python se2207.py resetall --format json
 
 6)
-python se2207.py questionnaireupd --source cli_test.txt
+python se2207.py questionnaireupd --source questionnaire4.txt
 
 
 7)
