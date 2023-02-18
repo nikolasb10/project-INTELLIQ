@@ -30,7 +30,7 @@ db.connect(err => {
 module.exports = { db };
 
 
-app.get('/intelliq_api/login', function(req, res, next) {
+app.post('/intelliq_api/login', function(req, res, next) {
   const email = req.body.username;
   const password = req.body.password;
 
@@ -298,16 +298,42 @@ app.post('/intelliq_api/admin/usermod/:username/:password', function(req, res, n
   const Date_of_Birth = req.body.Date_of_Birth;
 
   db.query(
-    "INSERT INTO intelliq22.member ('member_id','mstatus','First_Name','Last_Name','email','password','Gender','Date_of_Birth') VALUES (?,?,?,?,?,?,?,?)", [member_id,mstatus,First_Name,Last_Name,email,password,Gender,Date_of_Birth], (err, result) => {
+    "SELECT * FROM member WHERE email = ?", [email], (err, result) => {
       if(err) {
-        res.status(400).send(err)
-        console.log(err)
+        result.status(400).send({err: err})
       }
-      else{
-        /*if(result.length==0) {
-
-        }*/
-        res.status(200)("User Inserted")
+      if(result.length>0) {console.log(result)
+        if(mstatus != null || mstatus != null){
+          res.status(400).send("User already exists")
+        } else {
+          db.query(
+            "UPDATE member SET password = ? WHERE (email = ?)", [password,email], (err, result1) => {
+              if(err) {
+                res.status(400).send(err)
+                console.log(err)
+              }
+              else{
+                res.status(200).send("Password Updated")
+              }
+            }
+          )
+        }
+      } else {
+        if(member_id==null || mstatus==null || First_Name==null || Last_Name==null || Date_of_Birth==null){
+          res.status(400).send("member_id, First_Name, Last_Name, Date_of_Birth cannot be null for user insertion")
+        } else {
+          db.query(
+            "INSERT INTO intelliq22.member (member_id,mstatus,First_Name,Last_Name,email,password,Gender,Date_of_Birth) VALUES (?,?,?,?,?,?,?,?)", [member_id,mstatus,First_Name,Last_Name,email,password,Gender,Date_of_Birth], (err, result1) => {
+              if(err) {
+                res.status(400).send(err)
+                console.log(err)
+              }
+              else{
+                res.status(200).send("User Inserted")
+              }
+            }
+          )
+        }
       }
     }
   )
@@ -349,6 +375,39 @@ app.get('/intelliq_api/admin/users/:username', function(req, res, next) {
   )
 });
 
+// 7. Delete a questionaire
+app.post('/intelliq_api/admin/deleteq/:questionnaireID', function(req, res, next) {
+  const questionnaireID = req.params.questionnaireID;
+  const format = req.query.format;
+ 
+  db.query(
+    "DELETE FROM questionnaire_form WHERE questionnaire_id = ?",[questionnaireID], (err, result) => {
+      if(err) {
+        console.log('{"status":"failed", "reason": '+ err +'}');
+        return res.json([
+        {
+          "status":"failed", 
+          "reason": err
+        }
+        ])     
+      }
+      else {
+        if(format==='csv') {
+          res.status(200).send("status"+"\n"+"OK");
+        } else if(format==='json' || format===undefined) {
+          res.status(200).json([
+            {
+              "status":"OK", 
+            }
+          ])
+        } else {
+          // Invalid format parameter
+          res.status(400).send('Invalid format parameter');
+        }
+      }
+    }
+  )
+});
 
 // Backend endpoints, mandatory
 // a) get all questions for specific questionnaire
@@ -624,7 +683,7 @@ app.get('/intelliq_api/getquestionanswers/:questionnaireID/:questionID', functio
   const format = req.query.format;
 
   db.query(
-    "SELECT optid,A._session \
+    "SELECT A._session,optid \
      FROM questionnaire_answer as Q \
      LEFT JOIN ans_consist_of as A \
      ON Q._session = A._session \
