@@ -91,8 +91,11 @@ print(result.stdout.decode())
 
 
 #Show Questionnaire Commands (2) (QQ001)
-questionnaire_csv_command_2 = ['python','se2207.py','questionnaire','--questionnaire_id','QQ001','--format','csv']
-questionnaire_json_command_2 = ['python','se2207.py','questionnaire','--questionnaire_id','QQ001','--format','json']      
+#./se2207 questionnaire --questionnaire_id QQ004 --format csv
+#./se2207 questionnaire --questionnaire_id QQ004 --format json
+
+questionnaire_csv_command_2 = ['python','se2207.py','questionnaire','--questionnaire_id','QQ004','--format','csv']
+questionnaire_json_command_2 = ['python','se2207.py','questionnaire','--questionnaire_id','QQ004','--format','json']      
 
 result = subprocess.run(healthcheck_csv_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 print(result.stdout.decode())
