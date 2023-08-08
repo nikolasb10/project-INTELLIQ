@@ -7,17 +7,20 @@ Development of a software app, named intelliQ, for configuration and answering o
 
 Group: softeng2022-07
 
-Members: 
-el19028 - Benetos Nikolaos,
-el19045 - Stamatiou Spyridon,
-el19801 - Kitsios Georgios
+**This project was a collaborate effort of a team of 3 members. Those members are:**
+| Name | Identification Number |
+| ---- | -------------------------- |
+| Nikolaos Benetos | 03119028 |
+| Spyridon Stamatiou | 03119045 |
+| Georgios Kitsios | el19801 |
 
-Implementation:
+**Implementation**
 
-BACKEND - Node js (for build of the services: npm i)
-FRONTEND - React js (for build of the services: npm i)
-DATABASE - Mysql Workbench
-CLI - Python
-API DOC - Postman
-
+| Asset                      | Technologies Used  |
+| -------------------------- | ------------------ |
+| BACKEND    | NodeJS  |
+| FRONTEND   | ReactJS |
+| DATABASE   | Mysql Workbench    |
+| CLI        | Python  |
+| API DOC    | Postman |
 
